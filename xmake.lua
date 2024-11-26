@@ -51,5 +51,5 @@ target("editor")
     add_headerfiles("source/editor/**.h", "source/editor/**.hpp")
     
     -- 依赖关系
-    add_deps("nova")
+    add_deps("runtime")
 target_end()
