@@ -1,29 +1,55 @@
-set_project("LearnVulkan")
+-- root/xmake.lua
+set_project("nova")
+set_version("0.1.0")
 set_arch("x64")
-set_languages("c++20")
 
+-- 设置全局配置
+set_languages("c++17")
 add_rules("mode.debug", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")
-add_requires("vulkansdk", "glfw", "glm", "stb")
 
-target("core")
-    set_default(true)
+-- 设置警告级别和编译选项
+if is_mode("debug") then
+    set_warnings("all", "extra")
+    set_optimize("none")
+    add_defines("_DEBUG", "NOVA_DEBUG")
+elseif is_mode("release") then
+    set_warnings("none")
+    set_optimize("fastest")
+    set_strip("all")
+    add_defines("NDEBUG")
+end
+
+-- 添加包管理
+add_requires("vulkansdk", {configs = {static = true}})
+add_requires("glm", {configs = {header_only = true}})
+add_requires("spdlog", {configs = {fmt_external = false}})
+add_requires("glfw", {configs = {shared = false}})
+
+-- 引擎静态库
+target("runtime")
+    -- 基础配置
     set_kind("static")
-    add_includedirs("core")
-    add_headerfiles("core/**.h")
-    add_headerfiles("core/**.hpp")
-    add_files("core/**.cpp")
-    add_packages("vulkansdk", "glfw", "glm", "stb")
+
+    -- 源文件和头文件
+    add_files("source/runtime/**.cpp")
+    add_includedirs("source/runtime", {public = true})
+    add_headerfiles("source/runtime/**.h", "source/runtime/**.hpp")
+    
+    -- 依赖包
+    add_packages("vulkansdk", "spdlog", "glfw", "glm")
 target_end()
 
+
 target("editor")
-    set_default(true)
+    -- 基础配置
     set_kind("binary")
-    add_deps("core")
-    add_includedirs("core")
-    add_includedirs("editor")
-    add_headerfiles("editor/**.h")
-    add_headerfiles("editor/**.hpp")
-    add_files("editor/**.cpp")
-    add_packages("vulkansdk", "glfw", "glm", "stb")
+
+    -- 源文件和头文件
+    add_files("source/editor/**.cpp")
+    add_includedirs("source", {public = true})
+    add_headerfiles("source/editor/**.h", "source/editor/**.hpp")
+    
+    -- 依赖关系
+    add_deps("nova")
 target_end()
