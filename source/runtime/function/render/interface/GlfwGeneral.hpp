@@ -1,5 +1,5 @@
 #pragma once
-#include "vk_base.h"
+#include "VkBase.h"
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #pragma comment(lib, "glfw3.lib") //链接编译所需的静态库

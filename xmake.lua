@@ -21,11 +21,7 @@ elseif is_mode("release") then
 end
 
 -- 添加包管理
-add_requires("vulkansdk", {configs = {static = true}})
-add_requires("glm", {configs = {header_only = true}})
-add_requires("spdlog", {configs = {fmt_external = false}})
-add_requires("glfw", {configs = {shared = false}})
-add_requires("stb", {configs = {shared = false}})
+add_requires("vulkansdk", "spdlog", "glfw", "glm", "stb")
 
 -- 引擎静态库
 target("runtime")
