@@ -25,6 +25,7 @@ add_requires("vulkansdk", {configs = {static = true}})
 add_requires("glm", {configs = {header_only = true}})
 add_requires("spdlog", {configs = {fmt_external = false}})
 add_requires("glfw", {configs = {shared = false}})
+add_requires("stb", {configs = {shared = false}})
 
 -- 引擎静态库
 target("runtime")
@@ -37,7 +38,7 @@ target("runtime")
     add_headerfiles("source/runtime/**.h", "source/runtime/**.hpp")
     
     -- 依赖包
-    add_packages("vulkansdk", "spdlog", "glfw", "glm")
+    add_packages("vulkansdk", "spdlog", "glfw", "glm", "stb")
 target_end()
 
 

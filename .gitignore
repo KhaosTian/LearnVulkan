@@ -37,3 +37,4 @@ build
 .history/**
 vsxmake*
 .cache
+.idea

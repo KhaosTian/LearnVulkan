@@ -23,7 +23,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // stb_image.h
-#include <stb_image.h>
+#include <stb/stb_image.h>
 
 // Vulkan
 #ifdef _WIN32  // 考虑平台是Windows的情况（请自行解决其他平台上的差异）
