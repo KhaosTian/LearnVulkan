@@ -12,7 +12,7 @@ private:
 public:
     GraphicsBase(GraphicsBase&&) = delete;
 
-    static GraphicsBase& Instance()
+    static GraphicsBase& GetSingleton()
     {
         static GraphicsBase singleton;
         return singleton;
@@ -100,8 +100,123 @@ public:
     //===========================================================================
 private:
     VkSurfaceKHR mSurface;
+public:
+    VkSurfaceKHR GetSurface() const
+    {
+        return mSurface;
+    }
 
+    void Surface(VkSurfaceKHR surface)
+    {
+        if(!mSurface)
+        {
+            mSurface = surface;
+        }
+    }
 
+    //devices
+    //===========================================================================
+private:
+    VkPhysicalDevice mPhysicalDevice;
+    VkPhysicalDeviceProperties mPhysicalDeviceProperties;
+    VkPhysicalDeviceMemoryProperties mPhysicalDeviceMemoryProperties;
+    std::vector<VkPhysicalDevice> mAvailablePhysicalDevices;
+
+    VkDevice mDevice;
+    uint32_t mQueueFamilyIndexGraphics = VK_QUEUE_FAMILY_IGNORED;
+    uint32_t mQueueFamilyIndexPresentation = VK_QUEUE_FAMILY_IGNORED;
+    uint32_t mQueueFamilyIndexCompute = VK_QUEUE_FAMILY_IGNORED;
+
+    std::vector<const char*> mDeviceExtensionNames;
+public:
+    VkPhysicalDevice GetPhysicalDevice() const
+    {
+        return mPhysicalDevice;
+    }
+
+    const VkPhysicalDeviceProperties& GetPhysicalDeviceProperties() const
+    {
+        return mPhysicalDeviceProperties;
+    }
+
+    const VkPhysicalDeviceMemoryProperties& GetPhysicalDeviceMemoryProperties() const
+    {
+        return mPhysicalDeviceMemoryProperties;
+    }
+
+    VkDevice GetDevice() const
+    {
+        return mDevice;
+    }
+
+    VkPhysicalDevice GetAvailablePhysicalDevice(uint32_t index) const
+    {
+        return mAvailablePhysicalDevices[index];
+    }
+
+    uint32_t GetAvailablePhysicalDeviceCount() const
+    {
+        return static_cast<uint32_t>(mAvailablePhysicalDevices.size());
+    }
+
+    uint32_t GetQueueFamilyIndexGraphics() const
+    {
+        return mQueueFamilyIndexGraphics;
+    }
+
+    uint32_t GetQueueFamilyIndexPresentation() const
+    {
+        return mQueueFamilyIndexPresentation;
+    }
+
+    uint32_t GetQueueFamilyIndexCompute() const
+    {
+        return mQueueFamilyIndexCompute;
+    }
+
+    const std::vector<const char*>& GetDeviceExtensions() const
+    {
+        return mDeviceExtensionNames;
+    }
+    
+    void AddDeviceExtension(const char* extensionName)
+    {
+        AddNameToContainer(extensionName, mDeviceExtensionNames);
+    }
+
+    VkResult GetPhysicalDevice()
+    {
+        return VK_SUCCESS;
+    }
+
+    VkResult DeterminePhysicalDevice(uint32_t deviceIndex = 0, bool enableGraphicsQueue, bool enableCompute)
+    {
+        return VK_SUCCESS;
+    }
+
+    VkResult CreateDevice()
+    {
+        return VK_SUCCESS;
+    }
+
+    VkResult CheckDeviceExtensionNames(std::span<const char*> extensionNamesToCheck, const char* layerName = nullptr) const
+    {
+        
+    }
+
+    void SetDeviceExtensionNames(const std::vector<const char*>& extensionNames)
+    {
+        mDeviceExtensionNames= extensionNames;
+    }
+
+    //swap chain
+    //===========================================================================
+private:
+    std::vector<VkSurfaceFormatKHR> mAvailableSurfaceFormats;
+
+    VkSwapchainKHR mSwapChain;
+    std::vector<VkImage> mSwapChainImages;
+    std::vector<VkImageView> mSwapChainImageViews;
     
 };
 
