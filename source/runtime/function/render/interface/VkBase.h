@@ -89,8 +89,9 @@ public:
 
     //debug messenger
     //===========================================================================
-    private:
+private:
     VkDebugUtilsMessengerEXT mDebugMessenger;
+
     VkResult CreateDebugMessenger()
     {
         return VK_SUCCESS;
@@ -100,6 +101,7 @@ public:
     //===========================================================================
 private:
     VkSurfaceKHR mSurface;
+
 public:
     VkSurfaceKHR GetSurface() const
     {
@@ -108,7 +110,7 @@ public:
 
     void Surface(VkSurfaceKHR surface)
     {
-        if(!mSurface)
+        if (!mSurface)
         {
             mSurface = surface;
         }
@@ -128,6 +130,7 @@ private:
     uint32_t mQueueFamilyIndexCompute = VK_QUEUE_FAMILY_IGNORED;
 
     std::vector<const char*> mDeviceExtensionNames;
+
 public:
     VkPhysicalDevice GetPhysicalDevice() const
     {
@@ -178,7 +181,7 @@ public:
     {
         return mDeviceExtensionNames;
     }
-    
+
     void AddDeviceExtension(const char* extensionName)
     {
         AddNameToContainer(extensionName, mDeviceExtensionNames);
@@ -199,14 +202,15 @@ public:
         return VK_SUCCESS;
     }
 
-    VkResult CheckDeviceExtensionNames(std::span<const char*> extensionNamesToCheck, const char* layerName = nullptr) const
+    VkResult CheckDeviceExtensionNames(std::span<const char*> extensionNamesToCheck,
+                                       const char* layerName = nullptr) const
     {
-        
+        return VK_SUCCESS;
     }
 
     void SetDeviceExtensionNames(const std::vector<const char*>& extensionNames)
     {
-        mDeviceExtensionNames= extensionNames;
+        mDeviceExtensionNames = extensionNames;
     }
 
     //swap chain
@@ -217,11 +221,84 @@ private:
     VkSwapchainKHR mSwapChain;
     std::vector<VkImage> mSwapChainImages;
     std::vector<VkImageView> mSwapChainImageViews;
-    
-};
 
-inline const std::vector<const char*>& GraphicsBase::GetInstanceLayerNames() const
-{
-    return mInstanceLayerNames;
-}
-}
+    VkSwapchainCreateInfoKHR mSwapChainCreateInfo = {};
+
+    VkResult CreateSwapchainInternal()
+    {
+        return VK_SUCCESS;
+    }
+
+public:
+    const VkFormat& GetAvailableSurfaceFormat(uint32_t index) const
+    {
+        return mAvailableSurfaceFormats[index].format;
+    }
+
+    const VkColorSpaceKHR& GetAvailableSurfaceColorSpace(uint32_t index) const
+    {
+        return mAvailableSurfaceFormats[index].colorSpace;
+    }
+
+    uint32_t GetAvailableSurfaceFormatCount() const
+    {
+        return static_cast<uint32_t>(mAvailableSurfaceFormats.size());
+    }
+
+    VkSwapchainKHR GetSwapChain() const
+    {
+        return mSwapChain;
+    }
+
+    VkImage GetSwapChainImage(uint32_t index) const
+    {
+        return mSwapChainImages[index];
+    }
+
+    uint32_t GetSwapChainImageCount() const
+    {
+        return static_cast<uint32_t>(mSwapChainImages.size());
+    }
+
+    VkImageView GetSwapChainImageView(uint32_t index) const
+    {
+        return mSwapChainImageViews[index];
+    }
+
+    const VkSwapchainCreateInfoKHR& GetSwapChainCreateInfo() const
+    {
+        return mSwapChainCreateInfo;
+    }
+
+    VkResult GetSurfaceFormats()
+    {
+        return VK_SUCCESS;
+    }
+
+    VkResult CreateSwapchain(bool limitFrameRate = true, VkSwapchainCreateFlagsKHR flags = 0)
+    {
+        return VK_SUCCESS;
+    }
+
+    VkResult RecreateSwapChain()
+    {
+        return VK_SUCCESS;
+    }
+
+    //vulkan version
+    //===========================================================================
+private:
+    uint32_t mApiVersion = VK_API_VERSION_1_0;
+
+public:
+    uint32_t GetApiVersion() const
+    {
+        return mApiVersion;
+    }
+
+    VkResult UseLatestApiVersion()
+    {
+        
+    }
+};
+};
