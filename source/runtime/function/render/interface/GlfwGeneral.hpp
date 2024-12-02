@@ -27,6 +27,8 @@ inline bool InitializeWindow(
     const bool isResizable = true,
     bool enableFpsLimit = true)
 {
+    auto& vm = Nova::VulkanManager::GetSingleton();
+    
     if (!glfwInit())
     {
         std::cout << std::format("[ InitializeWindow ] ERROR\nFailed to initialize GLFW!\n");
@@ -37,6 +39,20 @@ inline bool InitializeWindow(
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, isResizable);
 
+    uint32_t extensionCount = 0;
+    const char** extensionNames = glfwGetRequiredInstanceExtensions(&extensionCount);
+    if(!extensionNames)
+    {
+        std::cout<<std::format("[ InitializeWindow ] ERROR\nFailed to get GLFW required extensions!\n");
+        glfwTerminate();
+        return false;
+    }
+
+    for(size_t i=0; i < extensionCount; i++)
+    {
+        vm.AddInstanceExtensionName(extensionNames[i]);
+    }
+    
     kMonitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* pMode = glfwGetVideoMode(kMonitor);
 
@@ -76,7 +92,7 @@ inline void UpdateWindowTitleWithFps()
     currentTime = glfwGetTime(); // 获取当前时间
     frameCount++;
 
-    if ((timeDiff = currentTime - lastTime) >= 1.0)
+    if ((timeDiff = currentTime - lastTime) >= 0.1)
     {
         ss.precision(1);
         ss << kWindowTitle << "     " << std::fixed << frameCount / timeDiff << " FPS";

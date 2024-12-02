@@ -3,18 +3,18 @@
 
 namespace Nova
 {
-class GraphicsBase
+class VulkanManager
 {
 private:
-    GraphicsBase() = default;
-    ~GraphicsBase() = default;
+    VulkanManager() = default;
+    ~VulkanManager() = default;
 
 public:
-    GraphicsBase(GraphicsBase&&) = delete;
+    VulkanManager(VulkanManager&&) = delete;
 
-    static GraphicsBase& GetSingleton()
+    static VulkanManager& GetSingleton()
     {
-        static GraphicsBase singleton;
+        static VulkanManager singleton;
         return singleton;
     }
 
@@ -45,7 +45,10 @@ public:
         return mInstance;
     }
 
-    const std::vector<const char*>& GetInstanceLayerNames() const;
+    const std::vector<const char*>& GetInstanceLayerNames() const
+    {
+        return mInstanceLayerNames;
+    }
 
     const std::vector<const char*>& GetInstanceExtensionNames() const
     {
@@ -64,6 +67,11 @@ public:
 
     VkResult CreateInstance(VkInstanceCreateFlags flags = 0)
     {
+#ifndef NDEBUG
+        AddInstanceLayerName("VK_LAYER_KHRONOS_validation");
+        AddInstanceExtensionName(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+        
         return VK_SUCCESS;
     }
 
@@ -192,7 +200,8 @@ public:
         return VK_SUCCESS;
     }
 
-    VkResult DeterminePhysicalDevice(uint32_t deviceIndex = 0, bool enableGraphicsQueue, bool enableCompute)
+    VkResult DeterminePhysicalDevice(uint32_t deviceIndex = 0, bool enableGraphicsQueue = true,
+                                     bool enableCompute = true)
     {
         return VK_SUCCESS;
     }
@@ -298,7 +307,9 @@ public:
 
     VkResult UseLatestApiVersion()
     {
-        
+        return VK_SUCCESS;
     }
+
+
 };
 };
