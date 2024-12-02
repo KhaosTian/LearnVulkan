@@ -21,11 +21,11 @@ public:
     //vulkan instance & layers & extensions
     //===========================================================================
 private:
-    VkInstance m_Instance;
+    VkInstance mInstance;
 
     //设计一个同时具有vector和hash的容器
-    std::vector<const char*> m_InstanceLayerNames;
-    std::vector<const char*> m_InstanceExtensionNames;
+    std::vector<const char*> mInstanceLayerNames;
+    std::vector<const char*> mInstanceExtensionNames;
 
     static void AddNameToContainer(const char* name, std::vector<const char*>& container)
     {
@@ -42,27 +42,24 @@ private:
 public:
     VkInstance GetInstance() const
     {
-        return m_Instance;
+        return mInstance;
     }
 
-    const std::vector<const char*>& GetInstanceLayerNames() const
-    {
-        return m_InstanceLayerNames;
-    }
+    const std::vector<const char*>& GetInstanceLayerNames() const;
 
     const std::vector<const char*>& GetInstanceExtensionNames() const
     {
-        return m_InstanceExtensionNames;
+        return mInstanceExtensionNames;
     }
 
     void AddInstanceLayerName(const char* layer)
     {
-        AddNameToContainer(layer, m_InstanceLayerNames);
+        AddNameToContainer(layer, mInstanceLayerNames);
     }
 
     void AddInstanceExtensionName(const char* extension)
     {
-        AddNameToContainer(extension, m_InstanceExtensionNames);
+        AddNameToContainer(extension, mInstanceExtensionNames);
     }
 
     VkResult CreateInstance(VkInstanceCreateFlags flags = 0)
@@ -77,7 +74,7 @@ public:
 
     void SetInstanceLayerNames(const std::vector<const char*>& layerNames)
     {
-        m_InstanceLayerNames = layerNames;
+        mInstanceLayerNames = layerNames;
     }
 
     VkResult CheckInstanceExtensionNames(std::span<const char*> extensionNames)
@@ -87,13 +84,13 @@ public:
 
     void SetInstanceExtensionNames(const std::vector<const char*>& extensionNames)
     {
-        m_InstanceExtensionNames = extensionNames;
+        mInstanceExtensionNames = extensionNames;
     }
 
     //debug messenger
     //===========================================================================
     private:
-    VkDebugUtilsMessengerEXT m_DebugMessenger;
+    VkDebugUtilsMessengerEXT mDebugMessenger;
     VkResult CreateDebugMessenger()
     {
         return VK_SUCCESS;
@@ -102,9 +99,14 @@ public:
     //window surface
     //===========================================================================
 private:
-    VkSurfaceKHR m_Surface;
+    VkSurfaceKHR mSurface;
 
 
     
 };
+
+inline const std::vector<const char*>& GraphicsBase::GetInstanceLayerNames() const
+{
+    return mInstanceLayerNames;
+}
 }

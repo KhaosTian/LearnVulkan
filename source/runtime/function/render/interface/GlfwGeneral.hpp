@@ -2,21 +2,30 @@
 #include "VkBase.h"
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#pragma comment(lib, "glfw3.lib") //链接编译所需的静态库
 
-//窗口的指针，全局变量自动初始化为NULL
+/// GLFW窗口指针，全局变量，默认为NULL
 inline GLFWwindow* kWindow;
-//显示器信息的指针
+
+/// 显示器信息指针
 inline GLFWmonitor* kMonitor;
-//窗口标题
+
+/// 窗口标题
 inline auto kWindowTitle = "LearnVulkan";
 
-
-inline bool initialize_window(
+/**
+ * 初始化GLFW并创建窗口。
+ *
+ * @param size 窗口的大小
+ * @param fullScreen 是否全屏，默认为false
+ * @param isResizable 是否可调整窗口大小，默认为true
+ * @param enableFpsLimit 是否限制帧率，默认为true
+ * @return 初始化是否成功
+ */
+inline bool InitializeWindow(
     const VkExtent2D size,
-    const bool full_screen = false,
-    const bool is_resizable = true,
-    bool limit_frame_rate = true)
+    const bool fullScreen = false,
+    const bool isResizable = true,
+    bool enableFpsLimit = true)
 {
     if (!glfwInit())
     {
@@ -24,16 +33,17 @@ inline bool initialize_window(
         return false;
     }
 
-
+    // 设置窗口属性
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, is_resizable);
+    glfwWindowHint(GLFW_RESIZABLE, isResizable);
 
     kMonitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* pMode = glfwGetVideoMode(kMonitor);
-    kWindow = full_screen
-                 ? glfwCreateWindow(pMode->width, pMode->height, kWindowTitle, kMonitor, nullptr)
-                 : glfwCreateWindow(static_cast<int>(size.width), static_cast<int>(size.height), kWindowTitle, nullptr,
-                                    nullptr);
+
+    // 创建窗口
+    kWindow = fullScreen
+        ? glfwCreateWindow(pMode->width, pMode->height, kWindowTitle, kMonitor, nullptr)
+        : glfwCreateWindow(static_cast<int>(size.width), static_cast<int>(size.height), kWindowTitle, nullptr, nullptr);
 
     if (!kWindow)
     {
@@ -44,40 +54,59 @@ inline bool initialize_window(
     return true;
 }
 
-inline void terminate_window()
+/**
+ * 终止GLFW并清理资源。
+ */
+inline void TerminateWindow()
 {
     glfwTerminate();
 }
 
-inline void set_window_title_with_fps()
+/**
+ * 设置窗口标题并显示当前FPS。
+ */
+inline void UpdateWindowTitleWithFps()
 {
-    static double current_time = 0.0; //初始化局部静态变量
-    static double last_time = glfwGetTime();
-    static double time_diff;
-    static int frame_count = -1;
+    static double currentTime = 0.0; // 当前时间
+    static double lastTime = glfwGetTime();
+    static double timeDiff;
+    static int frameCount = -1;
     static std::stringstream ss;
 
-    current_time = glfwGetTime(); //更新当前时间和帧数
-    frame_count++;
-    if ((time_diff = current_time - last_time) >= 1)
+    currentTime = glfwGetTime(); // 获取当前时间
+    frameCount++;
+
+    if ((timeDiff = currentTime - lastTime) >= 1.0)
     {
         ss.precision(1);
-        ss << kWindowTitle << "     " << std::fixed << frame_count / time_diff << " FPS";
-        glfwSetWindowTitle(kWindow, ss.str().c_str()); //当前时间差超过1s更新标题
+        ss << kWindowTitle << "     " << std::fixed << frameCount / timeDiff << " FPS";
+        glfwSetWindowTitle(kWindow, ss.str().c_str()); // 更新窗口标题
         ss.str("");
-        last_time = glfwGetTime(); //更新上一帧时间
-        frame_count = 0; //清空帧数计数器
+        lastTime = currentTime; // 更新上一帧时间
+        frameCount = 0; // 重置帧计数器
     }
 }
 
-inline void make_window_full_screen()
+/**
+ * 将窗口设置为全屏模式。
+ */
+inline void MakeWindowFullScreen()
 {
     const GLFWvidmode* mode = glfwGetVideoMode(kMonitor);
     glfwSetWindowMonitor(kWindow, kMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 }
 
-inline void make_window_windowed(const VkOffset2D position, const VkExtent2D size)
+/**
+ * 指定窗口位置和大小，并更新显示模式
+ *
+ * @param position 窗口位置
+ * @param size 窗口大小
+ */
+inline void RestoreWindow(const VkOffset2D position, const VkExtent2D size)
 {
     const GLFWvidmode* mode = glfwGetVideoMode(kMonitor);
-    glfwSetWindowMonitor(kWindow, kMonitor, position.x, position.y, size.width, size.height, mode->refreshRate);
+    glfwSetWindowMonitor(kWindow, kMonitor,
+                         position.x, position.y,
+                         static_cast<int>(size.width), static_cast<int>(size.height),
+                         mode->refreshRate);
 }
