@@ -52,6 +52,18 @@ inline bool InitializeWindow(
     {
         vm.AddInstanceExtensionName(extensionNames[i]);
     }
+
+    //window surface
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    if(VkResult result = glfwCreateWindowSurface(vm.GetInstance(), kWindow, nullptr, &surface))
+    {
+        std::cout << std::format("[ InitializeWindow ] ERROR\nFailed to create GLFW surface!\n");
+        glfwTerminate();
+        return false;
+    }
+
+    vm.SetSurface(surface);
+
     
     kMonitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* pMode = glfwGetVideoMode(kMonitor);

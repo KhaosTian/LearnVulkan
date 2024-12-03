@@ -217,7 +217,44 @@ private:
 
     VkResult CreateDebugMessenger()
     {
-        return VK_SUCCESS;
+        static PFN_vkDebugUtilsMessengerCallbackEXT DebugUtilsMessengerCallback = [](
+            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+            VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+            void* pUserData) -> VkBool32
+        {
+            std::cout << std::format("[ VulkanManager ] Debug: ") << pCallbackData->pMessage << '\n';
+            return VK_FALSE;
+        };
+
+        VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+            .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+            VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+            .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+            VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+            .pfnUserCallback = DebugUtilsMessengerCallback,
+        };
+
+        const auto vkCreateDebugUtilsMessengerExt = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+            vkGetInstanceProcAddr(mInstance, "vkCreateDebugUtilsMessengerEXT"));
+        if (vkCreateDebugUtilsMessengerExt)
+        {
+            const VkResult result = vkCreateDebugUtilsMessengerExt(mInstance, &debugUtilsMessengerCreateInfo, nullptr,
+                                                                   &mDebugMessenger);
+            if (result)
+            {
+                std::cout << std::format("[ VulkanManager ] Failed to create debug messenger: ") << result << '\n';
+            }
+            return result;
+        }
+
+        std::cout << std::format("[ VulkanManager ] Failed to get vkCreateDebugUtilsMessengerEXT\n");
+
+        //没有合适的错误代码时就返回 VK_RESULT_MAX_ENUM
+        return VK_RESULT_MAX_ENUM;
     }
 
     //window surface
@@ -231,7 +268,7 @@ public:
         return mSurface;
     }
 
-    void Surface(VkSurfaceKHR surface)
+    void SetSurface(VkSurfaceKHR surface)
     {
         if (!mSurface)
         {
@@ -255,9 +292,28 @@ private:
     std::vector<const char*> mDeviceExtensionNames;
 
 public:
-    VkPhysicalDevice GetPhysicalDevice() const
+    VkResult GetPhysicalDevice()
     {
-        return mPhysicalDevice;
+        uint32_t deviceCount = 0;
+        VkResult result = vkEnumeratePhysicalDevices(mInstance, &deviceCount, nullptr)
+        if (result != VK_SUCCESS)
+        {
+            std::cout << std::format("[ VulkanManager ] Failed to enumerate physical devices: ") << result << '\n';
+            return result;
+        }
+        if (deviceCount == 0)
+        {
+            std::cout << std::format("[ VulkanManager ] Failed to find any physical devices\n");
+            abort();
+        }
+        
+        mAvailablePhysicalDevices.resize(deviceCount);
+        result = vkEnumeratePhysicalDevices(mInstance, &deviceCount, mAvailablePhysicalDevices.data());
+        if (result != VK_SUCCESS)
+        {
+            std::cout << std::format("[ VulkanManager ] Failed to enumerate physical devices: ") << result << '\n';
+        }
+        return result;
     }
 
     const VkPhysicalDeviceProperties& GetPhysicalDeviceProperties() const
