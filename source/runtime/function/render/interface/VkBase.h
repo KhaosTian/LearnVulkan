@@ -24,8 +24,8 @@ private:
     VkInstance mInstance;
 
     //设计一个同时具有vector和hash的容器
-    std::vector<const char*> mInstanceLayerNames;
-    std::vector<const char*> mInstanceExtensionNames;
+    std::vector<const char*> mInstanceLayers;
+    std::vector<const char*> mInstanceExtensions;
 
     static void AddNameToContainer(const char* name, std::vector<const char*>& container)
     {
@@ -47,22 +47,22 @@ public:
 
     const std::vector<const char*>& GetInstanceLayerNames() const
     {
-        return mInstanceLayerNames;
+        return mInstanceLayers;
     }
 
     const std::vector<const char*>& GetInstanceExtensionNames() const
     {
-        return mInstanceExtensionNames;
+        return mInstanceExtensions;
     }
 
     void AddInstanceLayerName(const char* layer)
     {
-        AddNameToContainer(layer, mInstanceLayerNames);
+        AddNameToContainer(layer, mInstanceLayers);
     }
 
     void AddInstanceExtensionName(const char* extension)
     {
-        AddNameToContainer(extension, mInstanceExtensionNames);
+        AddNameToContainer(extension, mInstanceExtensions);
     }
 
     VkResult CreateInstance(VkInstanceCreateFlags flags = 0)
@@ -71,28 +71,143 @@ public:
         AddInstanceLayerName("VK_LAYER_KHRONOS_validation");
         AddInstanceExtensionName(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
-        
+
+        VkApplicationInfo applicationInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+            .apiVersion = mApiVersion,
+        };
+
+        VkInstanceCreateInfo instanceCreateInfo =
+        {
+            .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+            .flags = flags,
+            .pApplicationInfo = &applicationInfo,
+            .enabledLayerCount = static_cast<uint32_t>(mInstanceLayers.size()),
+            .ppEnabledLayerNames = mInstanceLayers.data(),
+            .enabledExtensionCount = static_cast<uint32_t>(mInstanceExtensions.size()),
+            .ppEnabledExtensionNames = mInstanceExtensions.data(),
+        };
+
+        if (const VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &mInstance))
+        {
+            std::cout << std::format("[ VulkanManager ] Failed to create instance: ") << result << '\n';
+            return result;
+        }
+
+        std::cout << std::format(
+            "Vulkan API Version: {}.{}.{}\n",
+            VK_VERSION_MAJOR(mApiVersion),
+            VK_VERSION_MINOR(mApiVersion),
+            VK_VERSION_PATCH(mApiVersion));
+
+#ifndef NDEBUG
+        CreateDebugMessenger();
+#endif
         return VK_SUCCESS;
     }
 
-    VkResult CheckInstanceLayerNames(std::span<const char*> layerNames)
+    VkResult CheckInstanceLayers(std::span<const char*> layersToCheck)
     {
+        uint32_t layerCount;
+        if (VkResult result = vkEnumerateInstanceLayerProperties(&layerCount, nullptr))
+        {
+            std::cout << std::format("[ VulkanManager ] Failed to enumerate instance layer properties: ") << result <<
+                '\n';
+            return result;
+        }
+
+        if (layerCount == 0)
+        {
+            for (auto& layerName : layersToCheck)
+            {
+                layerName = nullptr;
+            }
+            return VK_SUCCESS;
+        }
+
+        std::vector<VkLayerProperties> availableLayers;
+        availableLayers.resize(layerCount);
+        if (VkResult result = vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data()))
+        {
+            std::cout << std::format("[ VulkanManager ] Failed to enumerate instance layer properties: ") << result <<
+                '\n';
+            return result;
+        }
+
+        for (auto& layerName : layersToCheck)
+        {
+            bool found = false;
+            for (auto& availableLayer : availableLayers)
+            {
+                if (!strcmp(layerName, availableLayer.layerName))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                layerName = nullptr;
+            }
+        }
+
         return VK_SUCCESS;
     }
 
     void SetInstanceLayerNames(const std::vector<const char*>& layerNames)
     {
-        mInstanceLayerNames = layerNames;
+        mInstanceLayers = layerNames;
     }
 
     VkResult CheckInstanceExtensionNames(std::span<const char*> extensionNames)
     {
+        uint32_t extensionCount;
+        if (VkResult result = vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr))
+        {
+            std::cout << std::format("[ VulkanManager ] Failed to enumerate instance extension properties: ") << result
+                << '\n';
+            return result;
+        }
+        if (extensionCount == 0)
+        {
+            for (auto& extensionName : extensionNames)
+            {
+                extensionName = nullptr;
+            }
+            return VK_SUCCESS;
+        }
+        std::vector<VkExtensionProperties> availableExtensions;
+        availableExtensions.resize(extensionCount);
+        if (VkResult result = vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount,
+                                                                     availableExtensions.data()))
+        {
+            std::cout << std::format("[ VulkanManager ] Failed to enumerate instance extension properties: ") << result
+                << '\n';
+            return result;
+        }
+        for (auto& extensionName : extensionNames)
+        {
+            bool found = false;
+            for (auto& availableExtension : availableExtensions)
+            {
+                if (!strcmp(extensionName, availableExtension.extensionName))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                extensionName = nullptr;
+            }
+        }
         return VK_SUCCESS;
     }
 
     void SetInstanceExtensionNames(const std::vector<const char*>& extensionNames)
     {
-        mInstanceExtensionNames = extensionNames;
+        mInstanceExtensions = extensionNames;
     }
 
     //debug messenger
@@ -307,9 +422,11 @@ public:
 
     VkResult UseLatestApiVersion()
     {
+        if (vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkEnumerateInstanceVersion"))
+        {
+            return vkEnumerateInstanceVersion(&mApiVersion);
+        }
         return VK_SUCCESS;
     }
-
-
 };
 };
