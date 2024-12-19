@@ -72,5 +72,4 @@
     - { key: readability-identifier-naming.VariableCase,        value: camelCase  }
     - { key: readability-identifier-naming.MacroDefinitionCase, value: UPPER_CASE }
     - { key: readability-identifier-naming.GlobalConstantCase,  value: UPPER_CASE }
-    - { key: readability-identifier-naming.LocalVariableCase,   value: camelCase  }
 ...
