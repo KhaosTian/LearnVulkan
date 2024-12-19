@@ -1,33 +1,21 @@
 #pragma once
-#include "VkBase.h"
+#include "VulkanRHI.h"
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-/// GLFW窗口指针，全局变量，默认为NULL
 inline GLFWwindow* kWindow;
 
-/// 显示器信息指针
 inline GLFWmonitor* kMonitor;
 
-/// 窗口标题
 inline auto kWindowTitle = "LearnVulkan";
 
-/**
- * 初始化GLFW并创建窗口。
- *
- * @param size 窗口的大小
- * @param fullScreen 是否全屏，默认为false
- * @param isResizable 是否可调整窗口大小，默认为true
- * @param enableFpsLimit 是否限制帧率，默认为true
- * @return 初始化是否成功
- */
 inline bool InitializeWindow(
     const VkExtent2D size,
     const bool fullScreen = false,
     const bool isResizable = true,
     bool enableFpsLimit = true)
 {
-    auto& vm = Nova::VulkanManager::GetSingleton();
+    auto& vm = Nova::VulkanRHI::GetSingleton();
     
     if (!glfwInit())
     {
@@ -55,7 +43,7 @@ inline bool InitializeWindow(
 
     //window surface
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    if(VkResult result = glfwCreateWindowSurface(vm.GetInstance(), kWindow, nullptr, &surface))
+    if(VkResult result = glfwCreateWindowSurface(vm.GetVKInstance(), kWindow, nullptr, &surface))
     {
         std::cout << std::format("[ InitializeWindow ] ERROR\nFailed to create GLFW surface!\n");
         glfwTerminate();
@@ -82,17 +70,11 @@ inline bool InitializeWindow(
     return true;
 }
 
-/**
- * 终止GLFW并清理资源。
- */
 inline void TerminateWindow()
 {
     glfwTerminate();
 }
 
-/**
- * 设置窗口标题并显示当前FPS。
- */
 inline void UpdateWindowTitleWithFps()
 {
     static double currentTime = 0.0; // 当前时间
@@ -115,21 +97,12 @@ inline void UpdateWindowTitleWithFps()
     }
 }
 
-/**
- * 将窗口设置为全屏模式。
- */
 inline void MakeWindowFullScreen()
 {
     const GLFWvidmode* mode = glfwGetVideoMode(kMonitor);
     glfwSetWindowMonitor(kWindow, kMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 }
 
-/**
- * 指定窗口位置和大小，并更新显示模式
- *
- * @param position 窗口位置
- * @param size 窗口大小
- */
 inline void RestoreWindow(const VkOffset2D position, const VkExtent2D size)
 {
     const GLFWvidmode* mode = glfwGetVideoMode(kMonitor);
