@@ -1,6 +1,6 @@
 #include "RuntimeContext.h"
 
-#include "Core/Log/LogSystem.h"
+#include "Core/LogSystem/LogSystem.h"
 
 namespace Nova {
 void RuntimeContext::Startup() {

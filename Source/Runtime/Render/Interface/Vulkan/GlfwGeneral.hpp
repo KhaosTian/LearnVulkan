@@ -15,9 +15,9 @@ inline bool InitializeWindow(
     const bool isResizable = true,
     bool enableFpsLimit = true)
 {
-    auto& vm = Nova::VulkanRHI::GetSingleton();
+    auto& rhi = Nova::VulkanRHI::GetInstance();
     
-    if (!glfwInit())
+    if (glfwInit() == 0)
     {
         std::cout << std::format("[ InitializeWindow ] ERROR\nFailed to initialize GLFW!\n");
         return false;
@@ -25,11 +25,11 @@ inline bool InitializeWindow(
 
     // 设置窗口属性
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, isResizable);
+    glfwWindowHint(GLFW_RESIZABLE, static_cast<int>(isResizable));
 
     uint32_t extensionCount = 0;
     const char** extensionNames = glfwGetRequiredInstanceExtensions(&extensionCount);
-    if(!extensionNames)
+    if(extensionNames == nullptr)
     {
         std::cout<<std::format("[ InitializeWindow ] ERROR\nFailed to get GLFW required extensions!\n");
         glfwTerminate();
@@ -38,19 +38,19 @@ inline bool InitializeWindow(
 
     for(size_t i=0; i < extensionCount; i++)
     {
-        vm.AddInstanceExtensionName(extensionNames[i]);
+        rhi.AddInstanceExtensionName(extensionNames[i]);
     }
 
     //window surface
     VkSurfaceKHR surface = VK_NULL_HANDLE;
-    if(VkResult result = glfwCreateWindowSurface(vm.GetVKInstance(), kWindow, nullptr, &surface))
+    if(VkResult result = glfwCreateWindowSurface(rhi.GetVKInstance(), kWindow, nullptr, &surface))
     {
         std::cout << std::format("[ InitializeWindow ] ERROR\nFailed to create GLFW surface!\n");
         glfwTerminate();
         return false;
     }
 
-    vm.SetSurface(surface);
+    rhi.SetSurface(surface);
 
     
     kMonitor = glfwGetPrimaryMonitor();
@@ -61,7 +61,7 @@ inline bool InitializeWindow(
         ? glfwCreateWindow(pMode->width, pMode->height, kWindowTitle, kMonitor, nullptr)
         : glfwCreateWindow(static_cast<int>(size.width), static_cast<int>(size.height), kWindowTitle, nullptr, nullptr);
 
-    if (!kWindow)
+    if (kWindow == nullptr)
     {
         std::cout << std::format("[ InitializeWindow ] ERROR\nFailed to create GLFW window!\n");
         glfwTerminate();

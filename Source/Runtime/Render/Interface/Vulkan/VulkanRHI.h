@@ -1,7 +1,7 @@
 #pragma once
 #include "VkStart.h"
 
-namespace nova {
+namespace Nova {
 class VulkanRHI {
 private:
     // 单例模式私有构造函数和析构函数，确保只能通过GetSingleton()获取实例
@@ -18,10 +18,9 @@ public:
     }
 
     //===========================================================================
-    // Vulkan实例、层和扩展管理
+    // vulkan instance, layer, extension
     //================== =========================================================
 private:
-    // Vulkan实例句柄
     VkInstance mInstance;
 
     // 实例层和扩展名称容器
@@ -73,7 +72,7 @@ public:
     // 创建Vulkan实例的详细方法
     VkResult CreateInstance(VkInstanceCreateFlags flags = 0) {
 // 在调试模式下自动添加验证层和调试扩展
-#ifndef NDEBUG
+#ifdef NOVA_DEBUG
         AddInstanceLayerName("VK_LAYER_KHRONOS_validation");
         AddInstanceExtensionName(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
@@ -111,7 +110,7 @@ public:
         );
 
 // 在调试模式下创建调试信使
-#ifndef NDEBUG
+#ifdef NOVA_DEBUG
         CreateDebugMessenger();
 #endif
         return VK_SUCCESS;
