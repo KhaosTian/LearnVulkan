@@ -27,9 +27,9 @@ private:
     VkPhysicalDevice m_physical_device { nullptr };
     VkDevice         m_device { nullptr };
 
-    VkQueue m_graphics_queue { nullptr };
-    VkQueue m_present_queue { nullptr };
-    VkQueue m_compute_queue { nullptr };
+    VkQueue m_queue_graphics { nullptr };
+    VkQueue m_queue_present { nullptr };
+    VkQueue m_queue_compute { nullptr };
 
     QueueFamilyIndices m_queue_indices {};
 
@@ -57,7 +57,8 @@ private:
     bool               IsDeviceSuitable(VkPhysicalDevice physical_device);
     QueueFamilyIndices FindQueueFamiliyIndices(VkPhysicalDevice physical_device) const;
     bool               CheckDeviceExtensionSupport(VkPhysicalDevice physical_device);
+    void               InitQueueCreateInfo(VkDeviceQueueCreateInfo& create_info, uint32_t queue_family_index);
 
-    void DestroyDebugUtilsMessengerEXT();
+    
 };
 } // namespace Nova

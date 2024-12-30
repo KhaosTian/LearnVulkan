@@ -19,7 +19,7 @@ void VulkanCore::Init(VulkanCoreInitInfo init_info) {
     InitPhysicalDevice();
     CreateLogicalDevice();
 }
-void Nova::VulkanCore::CreateInstance() {
+void VulkanCore::CreateInstance() {
     if (m_enable_validation_layers && !CheckValidationLayerSupport()) {
         LOG_ERROR("Failed to get available validation layers!");
     }
@@ -27,7 +27,7 @@ void Nova::VulkanCore::CreateInstance() {
     m_vulkan_api_version = VK_API_VERSION_1_0;
 
     // app info
-    VkApplicationInfo app_info {};
+    VkApplicationInfo app_info  = {};
     app_info.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     app_info.pApplicationName   = "Nova Renderer";
     app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -36,9 +36,9 @@ void Nova::VulkanCore::CreateInstance() {
     app_info.apiVersion         = m_vulkan_api_version;
 
     // create info
-    VkInstanceCreateInfo instance_create_info {};
-    instance_create_info.sType            = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instance_create_info.pApplicationInfo = &app_info;
+    VkInstanceCreateInfo instance_create_info = {};
+    instance_create_info.sType                = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_create_info.pApplicationInfo     = &app_info;
 
     std::vector<const char*> extensions          = GetRequiredExtensions();
     instance_create_info.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
@@ -48,7 +48,7 @@ void Nova::VulkanCore::CreateInstance() {
         instance_create_info.enabledLayerCount   = static_cast<uint32_t>(m_validation_layers.size());
         instance_create_info.ppEnabledLayerNames = m_validation_layers.data();
 
-        VkDebugUtilsMessengerCreateInfoEXT debug_create_info {};
+        VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {};
 
         instance_create_info.pNext = &debug_create_info;
 
@@ -58,7 +58,7 @@ void Nova::VulkanCore::CreateInstance() {
     }
 
     if (VK_SUCCESS != vkCreateInstance(&instance_create_info, nullptr, &m_instance)) {
-        LOG_ERROR("Failed to create instance");
+        LOG_ERROR("Failed to create instance!");
     }
 }
 
@@ -68,6 +68,7 @@ bool VulkanCore::CheckValidationLayerSupport() {
     std::vector<VkLayerProperties> available_Layers(layer_count);
     vkEnumerateInstanceLayerProperties(&layer_count, available_Layers.data());
 
+    // check layer
     for (const auto& layer_name: m_validation_layers) {
         bool found_layer = false;
         for (const auto& layer_properties: available_Layers) {
@@ -98,7 +99,7 @@ void VulkanCore::InitDebugMessenger() {
         return;
     }
 
-    VkDebugUtilsMessengerCreateInfoEXT create_info {};
+    VkDebugUtilsMessengerCreateInfoEXT create_info = {};
     PopulateDebugMessengerCreateInfo(create_info);
     if (VK_SUCCESS != vkCreateDebugUtilsMessengerEXT_NOVA(m_instance, &create_info, nullptr, &m_debug_messenger)) {
         LOG_ERROR("Failed to init debug messenger!");
@@ -129,6 +130,7 @@ void VulkanCore::InitPhysicalDevice() {
     std::vector<VkPhysicalDevice> devices(device_count);
     vkEnumeratePhysicalDevices(m_instance, &device_count, devices.data());
 
+    // determine suitable physical device
     std::map<VkPhysicalDevice, int> candidates;
     for (const auto& device: devices) {
         if (IsDeviceSuitable(device)) {
@@ -147,11 +149,8 @@ void VulkanCore::InitPhysicalDevice() {
 }
 
 bool VulkanCore::IsDeviceSuitable(VkPhysicalDevice physical_device) {
-    auto queue_indeces = FindQueueFamiliyIndices(physical_device);
+    auto queue_indeces        = FindQueueFamiliyIndices(physical_device);
     bool is_extension_support = CheckDeviceExtensionSupport(physical_device);
-    
-    VkPhysicalDeviceFeatures physical_device_features;
-    vkGetPhysicalDeviceFeatures(physical_device, &physical_device_features);
 
     if (!queue_indeces.IsComplte()) {
         return false;
@@ -166,6 +165,7 @@ QueueFamilyIndices VulkanCore::FindQueueFamiliyIndices(VkPhysicalDevice physical
     std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
     vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_families.data());
 
+    // match queue family indices
     QueueFamilyIndices indices = {};
     for (int i = 0; i < queue_families.size(); i++) {
         const auto& queue_family = queue_families[i];
@@ -199,12 +199,56 @@ bool VulkanCore::CheckDeviceExtensionSupport(VkPhysicalDevice physical_device) {
     std::vector<VkExtensionProperties> available_extensions(extension_count);
     vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extension_count, available_extensions.data());
 
+    // ensure that required extensions are supported
     std::set<std::string> required_extensions(m_device_extensions.begin(), m_device_extensions.end());
-    for (const auto& extension : available_extensions) {
+    for (const auto& extension: available_extensions) {
         required_extensions.erase(extension.extensionName);
     }
 
     return required_extensions.empty();
 }
+
+void VulkanCore::CreateLogicalDevice() {
+    m_queue_indices = FindQueueFamiliyIndices(m_physical_device);
+
+    // init device queue create info
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos(3);
+    InitQueueCreateInfo(queue_create_infos[0], m_queue_indices.graphics.value());
+    InitQueueCreateInfo(queue_create_infos[1], m_queue_indices.present.value());
+    InitQueueCreateInfo(queue_create_infos[2], m_queue_indices.compute.value());
+
+    VkPhysicalDeviceFeatures physical_device_features = {};
+    vkGetPhysicalDeviceFeatures(m_physical_device, &physical_device_features);
+
+    VkDeviceCreateInfo device_create_info      = {};
+    device_create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    device_create_info.pQueueCreateInfos       = queue_create_infos.data();
+    device_create_info.queueCreateInfoCount    = static_cast<uint32_t>(queue_create_infos.size());
+    device_create_info.pEnabledFeatures        = &physical_device_features;
+    device_create_info.ppEnabledExtensionNames = m_device_extensions.data();
+    device_create_info.enabledExtensionCount   = static_cast<uint32_t>(m_device_extensions.size());
+    device_create_info.enabledLayerCount       = 0;
+
+    if (VK_SUCCESS != vkCreateDevice(m_physical_device, &device_create_info, nullptr, &m_device)) {
+        LOG_ERROR("Failed to create logical device!");
+    }
+
+    // init queues of this device
+    vkGetDeviceQueue(m_device, m_queue_indices.graphics.value(), 0, &m_queue_graphics);
+    vkGetDeviceQueue(m_device, m_queue_indices.graphics.value(), 0, &m_queue_present);
+    vkGetDeviceQueue(m_device, m_queue_indices.graphics.value(), 0, &m_queue_compute);
+}
+
+void VulkanCore::InitQueueCreateInfo(VkDeviceQueueCreateInfo& create_info, uint32_t queue_family_index) {
+    float queue_priority         = 1.0f;
+    create_info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    create_info.queueCount       = 1;
+    create_info.pQueuePriorities = &queue_priority;
+    create_info.queueFamilyIndex = queue_family_index;
+}
+
+void VulkanCore::CreateSwapchain() {}
+
+void VulkanCore::CreateSwapchainImageViews() {}
 
 } // namespace Nova
