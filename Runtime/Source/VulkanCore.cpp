@@ -126,24 +126,38 @@ void VulkanCore::InitPhysicalDevice() {
         LOG_ERROR("Failed to enumerate physical devices!");
     }
 
-    std::vector<VkPhysicalDevice> physical_devices(device_count);
-    vkEnumeratePhysicalDevices(m_instance, &device_count, physical_devices.data());
+    std::vector<VkPhysicalDevice> devices(device_count);
+    vkEnumeratePhysicalDevices(m_instance, &device_count, devices.data());
 
-    for (const auto& physical_device: physical_devices) {
-        VkPhysicalDeviceProperties properties;
-        vkGetPhysicalDeviceProperties(physical_device, &properties);
-
-        if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && IsDeviceSuitable(physical_device)) {
-            m_physical_device = physical_device;
-            return;
+    std::map<VkPhysicalDevice, int> candidates;
+    for (const auto& device: devices) {
+        if (IsDeviceSuitable(device)) {
+            VkPhysicalDeviceProperties properties;
+            vkGetPhysicalDeviceProperties(device, &properties);
+            candidates.insert(std::make_pair(device, static_cast<int>(properties.deviceType)));
         }
     }
+
+    if (candidates.empty()) {
+        LOG_ERROR("Failed to find suitable physical device!");
+        return;
+    }
+
+    m_physical_device = candidates.rbegin()->first;
 }
 
 bool VulkanCore::IsDeviceSuitable(VkPhysicalDevice physical_device) {
     auto queue_indeces = FindQueueFamiliyIndices(physical_device);
+    bool is_extension_support = CheckDeviceExtensionSupport(physical_device);
+    
+    VkPhysicalDeviceFeatures physical_device_features;
+    vkGetPhysicalDeviceFeatures(physical_device, &physical_device_features);
 
-    return false;
+    if (!queue_indeces.IsComplte()) {
+        return false;
+    }
+
+    return true;
 }
 
 QueueFamilyIndices VulkanCore::FindQueueFamiliyIndices(VkPhysicalDevice physical_device) const {
@@ -177,6 +191,20 @@ QueueFamilyIndices VulkanCore::FindQueueFamiliyIndices(VkPhysicalDevice physical
     }
 
     return indices;
+}
+
+bool VulkanCore::CheckDeviceExtensionSupport(VkPhysicalDevice physical_device) {
+    uint32_t extension_count;
+    vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extension_count, nullptr);
+    std::vector<VkExtensionProperties> available_extensions(extension_count);
+    vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extension_count, available_extensions.data());
+
+    std::set<std::string> required_extensions(m_device_extensions.begin(), m_device_extensions.end());
+    for (const auto& extension : available_extensions) {
+        required_extensions.erase(extension.extensionName);
+    }
+
+    return required_extensions.empty();
 }
 
 } // namespace Nova

@@ -49,19 +49,15 @@ public:
     void CreateLogicalDevice();
 
 private:
-    bool CheckValidationLayerSupport();
+    bool                     CheckValidationLayerSupport();
     std::vector<const char*> GetRequiredExtensions() const;
 
     void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create_info);
 
-    bool IsDeviceSuitable(VkPhysicalDevice device);
-    QueueFamilyIndices FindQueueFamiliyIndices(VkPhysicalDevice device) const;
+    bool               IsDeviceSuitable(VkPhysicalDevice physical_device);
+    QueueFamilyIndices FindQueueFamiliyIndices(VkPhysicalDevice physical_device) const;
+    bool               CheckDeviceExtensionSupport(VkPhysicalDevice physical_device);
 
     void DestroyDebugUtilsMessengerEXT();
-
-    bool CheckDeviceExtensionSupport();
-
-
-
 };
 } // namespace Nova
