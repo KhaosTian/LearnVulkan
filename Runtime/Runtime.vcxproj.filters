@@ -27,7 +27,7 @@
     <ClCompile Include="Source\GlobalContext.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Source\RenderCore.cpp">
+    <ClCompile Include="Source\VulkanCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,7 +41,7 @@
     <ClInclude Include="Source\Graphics.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\VulkanStart.h">
+    <ClInclude Include="Source\VulkanIncludes.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Source\Fence.h">
@@ -56,10 +56,16 @@
     <ClInclude Include="Source\GlobalContext.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Macro.h">
+    <ClInclude Include="Source\VulkanMacro.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\RenderCore.h">
+    <ClInclude Include="Source\VulkanCore.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\VulkanTypes.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\VulkanExtension.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,7 @@
 #pragma once
 #include "VulkanHelper.hpp"
-#include <cassert>
+#include "VulkanIncludes.h"
+#include "VulkanMacro.h"
 
 #define VK_RESULT_THROW
 
@@ -1129,4 +1130,4 @@ public:
         return VK_SUCCESS;
     }
 };
-}; // namespace Nova
+} // namespace Nova
