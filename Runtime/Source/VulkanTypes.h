@@ -2,12 +2,23 @@
 #include "VulkanMacro.h"
 namespace Nova {
 struct QueueFamilyIndices {
-    std::optional<uint32_t> graphics;
-    std::optional<uint32_t> present;
-    std::optional<uint32_t> compute;
+    union {
+        struct {
+            uint32_t graphics;
+            uint32_t present;
+            uint32_t compute;
+        };
+        uint32_t data[3];
+    };
 
-    bool IsComplte() const {
-        return graphics.has_value() && present.has_value() && compute.has_value();
+    bool IsComplete() const {
+        return graphics != VK_QUEUE_FAMILY_IGNORED && present != VK_QUEUE_FAMILY_IGNORED && compute != VK_QUEUE_FAMILY_IGNORED;
     }
+};
+
+struct SwapChainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> surface_formats;
+    std::vector<VkPresentModeKHR>   presentModes;
 };
 } // namespace Nova
