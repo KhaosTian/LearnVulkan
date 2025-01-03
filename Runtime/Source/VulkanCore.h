@@ -61,7 +61,7 @@ public:
     void RecreateSwapchain();
     void CreateSwapchainImageViews();
 
-    void Clear();
+    void Clear() const;
 
 private:
     // instance
