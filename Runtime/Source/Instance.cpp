@@ -6,4 +6,6 @@ Vulkan::Instance::Instance(const WindowSystem& window) {
 
 
 }
+Instance::~Instance() {
+}
 }

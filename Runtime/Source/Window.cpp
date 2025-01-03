@@ -4,7 +4,7 @@
 
 namespace Vulkan {
 Window::Window(const WindowData& data): m_data(data) {
-
+    // 初始化glfw
     if (!glfwInit()) {
         std::runtime_error("Failed to init GLFW");
     }
@@ -34,8 +34,24 @@ Window::Window(const WindowData& data): m_data(data) {
         glfwSetWindowPos(m_window, (mode->width - data.width) / 2, (mode->height - data.height) / 2);
     }
 
-    // 回调函数
+    // 设置回调函数
 }
 
-Window::~Window() {}
+Window::~Window() {
+    if (m_window) {
+        glfwDestroyWindow(m_window);
+        m_window = nullptr;
+    }
 }
+VkExtent2D Window::WindowSize() const {
+    int width, height;
+    glfwGetWindowSize(m_window, &width, &height);
+    return VkExtent2D { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+}
+
+std::vector<const char*> Window::GetRequiredInstanceExtensions() const {
+    uint32_t     extension_count = 0;
+    const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
+    return std::vector<const char*>(glfw_extensions, glfw_extensions + extension_count);
+}
+} // namespace Vulkan
