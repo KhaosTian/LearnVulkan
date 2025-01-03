@@ -7,11 +7,17 @@
 
 namespace Nova {
 
+constexpr VkExtent2D DEFAULT_WINDOW_SIZE { 1280, 720 };
+constexpr const char* DEFAULT_WINDOW_TITLE = "LearnVulkan";
+constexpr const uint32_t MAX_FRAMES_IN_FLIGHT { 3 };
+
 struct VulkanCoreInitInfo {
     std::shared_ptr<WindowSystem> window_system;
 };
 
 class VulkanCore {
+
+
 private:
     GLFWwindow* m_window { nullptr };
     VkInstance  m_instance { nullptr };
@@ -34,10 +40,11 @@ private:
     QueueFamilyIndices m_queue_indices {};
 
     // swapchain
-    VkSwapchainKHR       m_swapchain {};
-    std::vector<VkImage> m_swapchain_images {};
-    VkFormat             m_swapchain_image_format {};
-    VkExtent2D           m_swapchain_extent {};
+    VkSwapchainKHR           m_swapchain {};
+    std::vector<VkImage>     m_swapchain_images {};
+    std::vector<VkImageView> m_swapchain_imageviews {};
+    VkFormat                 m_swapchain_image_format {};
+    VkExtent2D               m_swapchain_extent {};
 
     bool     m_enable_validation_layers { true };
     uint32_t m_vulkan_api_version { VK_API_VERSION_1_0 };
@@ -70,15 +77,11 @@ private:
 
     // queue
     QueueFamilyIndices QueryQueueFamiliyIndices(VkPhysicalDevice physical_device) const;
-    void               InitQueueCreateInfo(VkDeviceQueueCreateInfo& create_info, uint32_t queue_family_index);
 
     // swapchain
     SwapchainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physical_device) const;
     VkSurfaceFormatKHR      ChooseSwapchainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& surface_formats);
     VkPresentModeKHR        ChooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& present_modes);
     VkExtent2D              ChooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-
-
-
 };
 } // namespace Nova

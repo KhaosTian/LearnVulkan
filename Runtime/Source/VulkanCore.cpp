@@ -1,5 +1,6 @@
 #include "VulkanCore.h"
 #include "VulkanExtension.h"
+#include "VulkanUtils.h"
 
 namespace Nova {
 void VulkanCore::Init(VulkanCoreInitInfo init_info) {
@@ -71,7 +72,7 @@ void VulkanCore::InitDebugMessenger() {
 
     VkDebugUtilsMessengerCreateInfoEXT create_info = {};
     PopulateDebugMessengerCreateInfo(create_info);
-    if (VK_SUCCESS != vkCreateDebugUtilsMessengerEXT_NOVA(m_instance, &create_info, nullptr, &m_debug_messenger)) {
+    if (VK_SUCCESS != _vkCreateDebugUtilsMessengerEXT(m_instance, &create_info, nullptr, &m_debug_messenger)) {
         LOG_ERROR("Failed to init debug messenger!");
     }
 }
@@ -119,11 +120,25 @@ void VulkanCore::InitPhysicalDevice() {
 void VulkanCore::CreateLogicalDevice() {
     m_queue_indices = QueryQueueFamiliyIndices(m_physical_device);
 
+    // remove dupllicate indices using a set
+    std::set<uint32_t> queue_families = { m_queue_indices.graphics.value(),
+                                          m_queue_indices.present.value(),
+                                          m_queue_indices.compute.value() };
+
     // init queue create info
-    std::vector<VkDeviceQueueCreateInfo> queue_create_infos(3);
-    InitQueueCreateInfo(queue_create_infos[0], m_queue_indices.graphics);
-    InitQueueCreateInfo(queue_create_infos[1], m_queue_indices.present);
-    InitQueueCreateInfo(queue_create_infos[2], m_queue_indices.compute);
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+
+    float queue_priority     = 1.0f;
+    int   queue_family_index = 0;
+    for (const auto& queue_family: queue_families) {
+        VkDeviceQueueCreateInfo queue_create_info = {};
+        queue_create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queue_create_info.queueCount              = 1;
+        queue_create_info.pQueuePriorities        = &queue_priority;
+        queue_create_info.queueFamilyIndex        = queue_family_index;
+        queue_create_infos.emplace_back(queue_create_info);
+        queue_family_index++;
+    }
 
     VkPhysicalDeviceFeatures physical_device_features = {};
     vkGetPhysicalDeviceFeatures(m_physical_device, &physical_device_features);
@@ -142,9 +157,9 @@ void VulkanCore::CreateLogicalDevice() {
     }
 
     // init queues of this device
-    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_graphics);
-    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_present);
-    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_compute);
+    vkGetDeviceQueue(m_device, m_queue_indices.graphics.value(), 0, &m_queue_graphics);
+    vkGetDeviceQueue(m_device, m_queue_indices.present.value(), 0, &m_queue_present);
+    vkGetDeviceQueue(m_device, m_queue_indices.compute.value(), 0, &m_queue_compute);
 }
 
 bool VulkanCore::CheckValidationLayerSupport() {
@@ -190,7 +205,7 @@ void VulkanCore::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInf
         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     create_info.messageType =
         VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    create_info.pfnUserCallback = vkDebugUtilsMessengerCallsbackEXT_NOVA;
+    create_info.pfnUserCallback = _vkDebugUtilsMessengerCallsbackEXT;
 }
 
 bool VulkanCore::IsDeviceSuitable(VkPhysicalDevice physical_device) {
@@ -261,15 +276,6 @@ bool VulkanCore::CheckDeviceExtensionSupport(VkPhysicalDevice physical_device) {
     return required_extensions.empty();
 }
 
-void VulkanCore::InitQueueCreateInfo(VkDeviceQueueCreateInfo& create_info, uint32_t queue_family_index) {
-    static const float queue_priority = 1.0f;
-
-    create_info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    create_info.queueCount       = 1;
-    create_info.pQueuePriorities = &queue_priority;
-    create_info.queueFamilyIndex = queue_family_index;
-}
-
 void VulkanCore::CreateSwapchain() {
     SwapchainSupportDetails swapchain_support_details = QuerySwapChainSupport(m_physical_device);
     VkSurfaceFormatKHR chosen_surface_format = ChooseSwapchainSurfaceFormat(swapchain_support_details.surface_formats);
@@ -294,11 +300,15 @@ void VulkanCore::CreateSwapchain() {
     create_info.imageArrayLayers         = 1;
     create_info.imageUsage               = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
+    uint32_t queue_family_indices[3] = { m_queue_indices.graphics.value(),
+                                         m_queue_indices.present.value(),
+                                         m_queue_indices.compute.value() };
+
     // concurrent mode
     if (m_queue_indices.graphics != m_queue_indices.present) {
         create_info.imageSharingMode      = VK_SHARING_MODE_CONCURRENT;
         create_info.queueFamilyIndexCount = 2;
-        create_info.pQueueFamilyIndices   = m_queue_indices.data;
+        create_info.pQueueFamilyIndices   = queue_family_indices;
     }
     // exclusive mode
     else {
@@ -384,15 +394,51 @@ VkExtent2D VulkanCore::ChooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& cap
     return extent;
 }
 
-void VulkanCore::RecreateSwapchain() {}
+void VulkanCore::CreateSwapchainImageViews() {
+    m_swapchain_imageviews.resize(m_swapchain_images.size());
 
-void VulkanCore::CreateSwapchainImageViews() {}
+    for (size_t i = 0; i < m_swapchain_images.size(); i++) {
+        VkImageView imageview;
+        imageview = VulkanUtils::CreateImageView(
+            m_device,
+            m_swapchain_images[i],
+            m_swapchain_image_format,
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            VK_IMAGE_VIEW_TYPE_2D,
+            1,
+            1
+        );
+    }
+}
 
-void VulkanCore::Clear() {
+void VulkanCore::RecreateSwapchain() {
+    int width = 0;
+    int height = 0;
+    glfwGetFramebufferSize(m_window, &width, &height);
+    while (width == 0 || height == 0) {
+        glfwGetFramebufferSize(m_window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    // TODO:wait for fences
+
+    // destroy swapchain image views
+    for (auto imageview : m_swapchain_imageviews) {
+        vkDestroyImageView(m_device, imageview, nullptr);
+    }
+
+    vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
+
+    // create swapchain and imageviews
+    CreateSwapchain();
+    CreateSwapchainImageViews();
+}
+
+void VulkanCore::Clear() const {
     if (!m_enable_validation_layers) {
         return;
     }
 
-    vkDestroyDebugUtilsMessengerEXT_NOVA(m_instance, m_debug_messenger, nullptr);
+    _vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
 }
 } // namespace Nova
