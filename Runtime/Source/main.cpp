@@ -1,5 +1,6 @@
 ﻿#include "GlobalContext.h"
 #include "WindowSystem.h"
+import std;
 
 int main() {
 

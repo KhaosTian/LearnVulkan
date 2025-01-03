@@ -8,12 +8,27 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugUtilsMessengerEXT_NOVA(
     const VkAllocationCallbacks*              pAllocator,
     VkDebugUtilsMessengerEXT*                 pDebugMessenger
 ) {
-    auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
+    auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+        vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT")
+    );
     if (func) {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     }
-    
+
     return VK_ERROR_EXTENSION_NOT_PRESENT;
+}
+
+void vkDestroyDebugUtilsMessengerEXT_NOVA(
+    VkInstance                   instance,
+    VkDebugUtilsMessengerEXT     debug_messenger,
+    const VkAllocationCallbacks* pAllocator
+) {
+    auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
+        vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT")
+    );
+    if (func) {
+        func(instance, debug_messenger, pAllocator);
+    }
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL vkDebugUtilsMessengerCallsbackEXT_NOVA(

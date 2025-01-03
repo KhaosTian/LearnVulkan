@@ -42,7 +42,6 @@ private:
     bool     m_enable_validation_layers { true };
     uint32_t m_vulkan_api_version { VK_API_VERSION_1_0 };
 
-private:
 public:
     void Init(VulkanCoreInitInfo init_info);
     void CreateInstance();
@@ -54,6 +53,8 @@ public:
     void CreateSwapchain();
     void RecreateSwapchain();
     void CreateSwapchainImageViews();
+
+    void Clear();
 
 private:
     // instance
@@ -72,10 +73,12 @@ private:
     void               InitQueueCreateInfo(VkDeviceQueueCreateInfo& create_info, uint32_t queue_family_index);
 
     // swapchain
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physical_device) const;
+    SwapchainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physical_device) const;
     VkSurfaceFormatKHR      ChooseSwapchainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& surface_formats);
     VkPresentModeKHR        ChooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& present_modes);
     VkExtent2D              ChooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+
 
 };
 } // namespace Nova

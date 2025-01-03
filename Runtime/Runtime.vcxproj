@@ -89,6 +89,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\RenderSystem.cpp" />
     <ClCompile Include="Source\GlobalContext.cpp" />
     <ClCompile Include="Source\LogSystem.cpp" />
     <ClCompile Include="Source\main.cpp" />
@@ -96,6 +97,7 @@
     <ClCompile Include="Source\WindowSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\RenderSystem.h" />
     <ClInclude Include="Source\GlobalContext.h" />
     <ClInclude Include="Source\Fence.h" />
     <ClInclude Include="Source\GlfwGeneral.hpp" />

@@ -1,5 +1,5 @@
 #include "WindowSystem.h"
-#include "Macro.h"
+#include "VulkanMacro.h"
 
 namespace Nova {
 WindowSystem::~WindowSystem() {
@@ -7,13 +7,12 @@ WindowSystem::~WindowSystem() {
     glfwTerminate();
 }
 
-void WindowSystem::Init(const WindowCreateInfo& create_info)
-{
+void WindowSystem::Init(const WindowCreateInfo& create_info) {
     if (!glfwInit()) {
         LOG_FATAL(__FUNCTION__, "Failed to init GLFW");
     }
 
-    m_width = create_info.width;
+    m_width  = create_info.width;
     m_height = create_info.height;
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -37,7 +36,5 @@ bool WindowSystem::ShouldClose() const {
 void WindowSystem::SetTitle(const char* title) {
     glfwSetWindowTitle(m_window, title);
 }
-
-
 
 } // namespace Nova

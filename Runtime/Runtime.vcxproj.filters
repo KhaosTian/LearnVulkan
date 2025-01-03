@@ -30,6 +30,9 @@
     <ClCompile Include="Source\VulkanCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Source\RenderSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GlfwGeneral.hpp">
@@ -66,6 +69,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Source\VulkanExtension.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\RenderSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

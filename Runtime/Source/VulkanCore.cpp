@@ -18,6 +18,8 @@ void VulkanCore::Init(VulkanCoreInitInfo init_info) {
     CreateWindowSurface();
     InitPhysicalDevice();
     CreateLogicalDevice();
+    CreateSwapchain();
+    CreateSwapchainImageViews();
 }
 void VulkanCore::CreateInstance() {
     if (m_enable_validation_layers && !CheckValidationLayerSupport()) {
@@ -44,12 +46,12 @@ void VulkanCore::CreateInstance() {
     instance_create_info.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
     instance_create_info.ppEnabledExtensionNames = extensions.data();
 
+    VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
     if (m_enable_validation_layers) {
         instance_create_info.enabledLayerCount   = static_cast<uint32_t>(m_validation_layers.size());
         instance_create_info.ppEnabledLayerNames = m_validation_layers.data();
 
-        VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {};
-
+        PopulateDebugMessengerCreateInfo(debug_create_info);
         instance_create_info.pNext = &debug_create_info;
 
     } else {
@@ -62,38 +64,6 @@ void VulkanCore::CreateInstance() {
     }
 }
 
-bool VulkanCore::CheckValidationLayerSupport() {
-    uint32_t layer_count = 0;
-    vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
-    std::vector<VkLayerProperties> available_Layers(layer_count);
-    vkEnumerateInstanceLayerProperties(&layer_count, available_Layers.data());
-
-    // check layer
-    for (const auto& layer_name: m_validation_layers) {
-        bool found_layer = false;
-        for (const auto& layer_properties: available_Layers) {
-            if (std::strcmp(layer_name, layer_properties.layerName)) {
-                found_layer = true;
-                break;
-            }
-        }
-    }
-
-    return false;
-}
-
-std::vector<const char*> VulkanCore::QueryRequiredExtensions() const {
-    uint32_t                 extension_count     = 0;
-    const char**             glfw_extensions     = glfwGetRequiredInstanceExtensions(&extension_count);
-    std::vector<const char*> required_extensions = std::vector<const char*>(glfw_extensions, glfw_extensions + extension_count);
-
-    if (m_enable_validation_layers) {
-        required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-
-    return required_extensions;
-}
-
 void VulkanCore::InitDebugMessenger() {
     if (!m_enable_validation_layers) {
         return;
@@ -104,14 +74,6 @@ void VulkanCore::InitDebugMessenger() {
     if (VK_SUCCESS != vkCreateDebugUtilsMessengerEXT_NOVA(m_instance, &create_info, nullptr, &m_debug_messenger)) {
         LOG_ERROR("Failed to init debug messenger!");
     }
-}
-
-void VulkanCore::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create_info) {
-    create_info                 = {};
-    create_info.sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    create_info.messageType     = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    create_info.pfnUserCallback = vkDebugUtilsMessengerCallsbackEXT_NOVA;
 }
 
 void VulkanCore::CreateWindowSurface() {
@@ -130,13 +92,19 @@ void VulkanCore::InitPhysicalDevice() {
     std::vector<VkPhysicalDevice> devices(device_count);
     vkEnumeratePhysicalDevices(m_instance, &device_count, devices.data());
 
-    // determine suitable physical device
-    std::map<VkPhysicalDevice, int> candidates;
+    // prioritize discrete GPU
+    std::multimap<int, VkPhysicalDevice> candidates;
     for (const auto& device: devices) {
         if (IsDeviceSuitable(device)) {
             VkPhysicalDeviceProperties properties;
             vkGetPhysicalDeviceProperties(device, &properties);
-            candidates.insert(std::make_pair(device, static_cast<int>(properties.deviceType)));
+            int score = 0;
+            if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+                score += 1000;
+            } else if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+                score += 100;
+            }
+            candidates.insert(std::make_pair(score, device));
         }
     }
 
@@ -145,7 +113,84 @@ void VulkanCore::InitPhysicalDevice() {
         return;
     }
 
-    m_physical_device = candidates.rbegin()->first;
+    m_physical_device = candidates.rbegin()->second;
+}
+
+void VulkanCore::CreateLogicalDevice() {
+    m_queue_indices = QueryQueueFamiliyIndices(m_physical_device);
+
+    // init queue create info
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos(3);
+    InitQueueCreateInfo(queue_create_infos[0], m_queue_indices.graphics);
+    InitQueueCreateInfo(queue_create_infos[1], m_queue_indices.present);
+    InitQueueCreateInfo(queue_create_infos[2], m_queue_indices.compute);
+
+    VkPhysicalDeviceFeatures physical_device_features = {};
+    vkGetPhysicalDeviceFeatures(m_physical_device, &physical_device_features);
+
+    VkDeviceCreateInfo device_create_info      = {};
+    device_create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    device_create_info.pQueueCreateInfos       = queue_create_infos.data();
+    device_create_info.queueCreateInfoCount    = static_cast<uint32_t>(queue_create_infos.size());
+    device_create_info.pEnabledFeatures        = &physical_device_features;
+    device_create_info.ppEnabledExtensionNames = m_device_extensions.data();
+    device_create_info.enabledExtensionCount   = static_cast<uint32_t>(m_device_extensions.size());
+    device_create_info.enabledLayerCount       = 0;
+
+    if (VK_SUCCESS != vkCreateDevice(m_physical_device, &device_create_info, nullptr, &m_device)) {
+        LOG_ERROR("Failed to create logical device!");
+    }
+
+    // init queues of this device
+    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_graphics);
+    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_present);
+    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_compute);
+}
+
+bool VulkanCore::CheckValidationLayerSupport() {
+    uint32_t layer_count = 0;
+    vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
+    std::vector<VkLayerProperties> available_Layers(layer_count);
+    vkEnumerateInstanceLayerProperties(&layer_count, available_Layers.data());
+
+    // check layer
+    for (const auto& layer_name: m_validation_layers) {
+        bool found_layer = false;
+        for (const auto& layer_properties: available_Layers) {
+            if (std::strcmp(layer_name, layer_properties.layerName)) {
+                found_layer = true;
+                break;
+            }
+        }
+        if (!found_layer) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+std::vector<const char*> VulkanCore::QueryRequiredExtensions() const {
+    uint32_t                 extension_count = 0;
+    const char**             glfw_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
+    std::vector<const char*> required_extensions =
+        std::vector<const char*>(glfw_extensions, glfw_extensions + extension_count);
+
+    if (m_enable_validation_layers) {
+        required_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
+    return required_extensions;
+}
+
+void VulkanCore::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create_info) {
+    create_info       = {};
+    create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    create_info.messageSeverity =
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    create_info.messageType =
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    create_info.pfnUserCallback = vkDebugUtilsMessengerCallsbackEXT_NOVA;
 }
 
 bool VulkanCore::IsDeviceSuitable(VkPhysicalDevice physical_device) {
@@ -187,7 +232,7 @@ QueueFamilyIndices VulkanCore::QueryQueueFamiliyIndices(VkPhysicalDevice physica
         }
 
         VkBool32 is_present_support = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(m_physical_device, i, m_surface, &is_present_support);
+        vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, m_surface, &is_present_support);
 
         if (is_present_support) {
             indices.present = i;
@@ -216,37 +261,6 @@ bool VulkanCore::CheckDeviceExtensionSupport(VkPhysicalDevice physical_device) {
     return required_extensions.empty();
 }
 
-void VulkanCore::CreateLogicalDevice() {
-    m_queue_indices = QueryQueueFamiliyIndices(m_physical_device);
-
-    // init queue create info
-    std::vector<VkDeviceQueueCreateInfo> queue_create_infos(3);
-    InitQueueCreateInfo(queue_create_infos[0], m_queue_indices.graphics);
-    InitQueueCreateInfo(queue_create_infos[1], m_queue_indices.present);
-    InitQueueCreateInfo(queue_create_infos[2], m_queue_indices.compute);
-
-    VkPhysicalDeviceFeatures physical_device_features = {};
-    physical_device_features.samplerAnisotropy        = VK_TRUE;
-
-    VkDeviceCreateInfo device_create_info      = {};
-    device_create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    device_create_info.pQueueCreateInfos       = queue_create_infos.data();
-    device_create_info.queueCreateInfoCount    = static_cast<uint32_t>(queue_create_infos.size());
-    device_create_info.pEnabledFeatures        = &physical_device_features;
-    device_create_info.ppEnabledExtensionNames = m_device_extensions.data();
-    device_create_info.enabledExtensionCount   = static_cast<uint32_t>(m_device_extensions.size());
-    device_create_info.enabledLayerCount       = 0;
-
-    if (VK_SUCCESS != vkCreateDevice(m_physical_device, &device_create_info, nullptr, &m_device)) {
-        LOG_ERROR("Failed to create logical device!");
-    }
-
-    // init queues of this device
-    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_graphics);
-    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_present);
-    vkGetDeviceQueue(m_device, m_queue_indices.graphics, 0, &m_queue_compute);
-}
-
 void VulkanCore::InitQueueCreateInfo(VkDeviceQueueCreateInfo& create_info, uint32_t queue_family_index) {
     static const float queue_priority = 1.0f;
 
@@ -258,13 +272,14 @@ void VulkanCore::InitQueueCreateInfo(VkDeviceQueueCreateInfo& create_info, uint3
 
 void VulkanCore::CreateSwapchain() {
     SwapchainSupportDetails swapchain_support_details = QuerySwapChainSupport(m_physical_device);
-    VkSurfaceFormatKHR      chosen_surface_format     = ChooseSwapchainSurfaceFormat(swapchain_support_details.surface_formats);
-    VkPresentModeKHR        chosen_present_mode       = ChooseSwapchainPresentMode(swapchain_support_details.presentModes);
-    VkExtent2D              chosen_extent             = ChooseSwapchainExtent(swapchain_support_details.capabilities);
+    VkSurfaceFormatKHR chosen_surface_format = ChooseSwapchainSurfaceFormat(swapchain_support_details.surface_formats);
+    VkPresentModeKHR   chosen_present_mode   = ChooseSwapchainPresentMode(swapchain_support_details.presentModes);
+    VkExtent2D         chosen_extent         = ChooseSwapchainExtent(swapchain_support_details.capabilities);
 
     // calculate the desired image count
     uint32_t image_count = swapchain_support_details.capabilities.minImageCount + 1;
-    if (swapchain_support_details.capabilities.maxImageCount > 0 && image_count > swapchain_support_details.capabilities.maxImageCount) {
+    if (swapchain_support_details.capabilities.maxImageCount > 0 &&
+        image_count > swapchain_support_details.capabilities.maxImageCount) {
         image_count = swapchain_support_details.capabilities.maxImageCount;
     }
 
@@ -333,7 +348,8 @@ SwapchainSupportDetails VulkanCore::QuerySwapChainSupport(VkPhysicalDevice physi
 
 VkSurfaceFormatKHR VulkanCore::ChooseSwapchainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& surface_fromats) {
     for (const auto& surface_format: surface_fromats) {
-        if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM && surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+        if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM &&
+            surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             return surface_format;
         }
     }
@@ -372,4 +388,11 @@ void VulkanCore::RecreateSwapchain() {}
 
 void VulkanCore::CreateSwapchainImageViews() {}
 
+void VulkanCore::Clear() {
+    if (!m_enable_validation_layers) {
+        return;
+    }
+
+    vkDestroyDebugUtilsMessengerEXT_NOVA(m_instance, m_debug_messenger, nullptr);
+}
 } // namespace Nova
