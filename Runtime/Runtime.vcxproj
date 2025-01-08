@@ -106,7 +106,6 @@
   <ItemGroup>
     <ClInclude Include="Source\Vulkan\BaseRenderer.hpp" />
     <ClInclude Include="Source\Vulkan\Device.hpp" />
-    <ClInclude Include="Source\Vulkan\Enumerate.hpp" />
     <ClInclude Include="Source\Vulkan\Exception.hpp" />
     <ClInclude Include="Source\Vulkan\Instance.hpp" />
     <ClInclude Include="Source\RenderSystem.h" />

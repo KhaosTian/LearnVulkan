@@ -7,13 +7,13 @@ namespace Vulkan {
 Vulkan::Instance::Instance(const Window& window): m_window(window) {
     // vulkan version
 
-    // get instance extension
+    // instance extension
     auto extensions = window.GetRequiredInstanceExtensions();
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-    // check validation layer
-    m_layers = GetEnumerateVector(vkEnumerateInstanceLayerProperties);
-    CheckValidationLayerSupport(m_layers);
+    // validation layer
+    QueryValidationLayers(m_layers);
+    CheckValidationLayer(m_layers);
 
     //app info
     VkApplicationInfo app_info  = {};
@@ -37,7 +37,7 @@ Vulkan::Instance::Instance(const Window& window): m_window(window) {
     Check(vkCreateInstance(&create_info, nullptr, &m_instance), "create vulkan instance");
 
     // get instance properties
-    GetEnumerateVector(m_instance, vkEnumeratePhysicalDevices, m_physical_devices);
+    QueryPhysicalDevices();
 }
 
 Instance::~Instance() {
@@ -49,7 +49,7 @@ Instance::~Instance() {
     m_instance = nullptr;
 }
 
-void Instance::CheckValidationLayerSupport(const std::vector<VkLayerProperties>& layers) {
+void Instance::CheckValidationLayer(const std::vector<VkLayerProperties>& layers) {
     for (const auto& layer_name: m_validation_layers) {
         auto result = std::find_if(layers.begin(), layers.end(), [layer_name](const auto& layer_properties) {
             return std::strcmp(layer_name, layer_properties.layerName);
@@ -58,5 +58,19 @@ void Instance::CheckValidationLayerSupport(const std::vector<VkLayerProperties>&
             Throw(std::runtime_error("Counld not to find the requested validation layer"));
         }
     }
+}
+void Instance::QueryPhysicalDevices(std::vector<VkPhysicalDevice>& physical_devices) const {
+    uint32_t device_count = 0;
+    vkEnumeratePhysicalDevices(m_instance, &device_count, nullptr);
+    physical_devices.resize(device_count);
+    vkEnumeratePhysicalDevices(m_instance, &device_count, physical_devices.data());
+
+}
+
+void Instance::QueryValidationLayers(std::vector<VkLayerProperties>& layers) const{
+    uint32_t layer_count = 0;
+    vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
+    layers.resize(layer_count);
+    vkEnumerateInstanceLayerProperties(&layer_count, layers.data());
 }
 } // namespace Vulkan

@@ -104,9 +104,6 @@
     <ClInclude Include="Source\Vulkan\Window.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Vulkan\Enumerate.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Vulkan\Exception.hpp">
       <Filter>头文件</Filter>
     </ClInclude>

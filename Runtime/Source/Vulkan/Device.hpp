@@ -20,12 +20,12 @@ public:
     );
     ~Device();
 
-    VkDevice GetHandle() { return m_device; }
+    VkDevice GetHandle() const { return m_device; }
 
 private:
-    VkDevice       m_device {nullptr};
+    VkDevice               m_device { nullptr };
     const VkPhysicalDevice m_physical_device;
-    const Surface& m_surface;
+    const Surface&         m_surface;
 
     VkQueue m_queue_graphics { nullptr };
     VkQueue m_queue_present { nullptr };
