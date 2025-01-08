@@ -11,3 +11,8 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #pragma comment(lib, "vulkan-1.lib")
 #include <vulkan/vulkan.h>
+
+namespace Vulkan {
+void        Check(const VkResult result, const char* const operation);
+const char* ToString(const VkResult result);
+}

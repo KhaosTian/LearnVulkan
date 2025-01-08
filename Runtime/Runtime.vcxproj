@@ -89,7 +89,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Instance.cpp" />
+    <ClCompile Include="Source\Vulkan\BaseRenderer.cpp" />
+    <ClCompile Include="Source\Vulkan\Device.cpp" />
+    <ClCompile Include="Source\Vulkan\Instance.cpp" />
     <ClCompile Include="Source\RenderSystem.cpp" />
     <ClCompile Include="Source\GlobalContext.cpp" />
     <ClCompile Include="Source\LogSystem.cpp" />
@@ -97,11 +99,16 @@
     <ClCompile Include="Source\VulkanCore.cpp" />
     <ClCompile Include="Source\VulkanUtils.cpp" />
     <ClCompile Include="Source\WindowSystem.cpp" />
-    <ClCompile Include="Source\Vulkan.cpp" />
-    <ClCompile Include="Source\Window.cpp" />
+    <ClCompile Include="Source\Vulkan\Vulkan.cpp" />
+    <ClCompile Include="Source\Vulkan\Window.cpp" />
+    <ClCompile Include="Source\Vulkan\Surface.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Instance.hpp" />
+    <ClInclude Include="Source\Vulkan\BaseRenderer.hpp" />
+    <ClInclude Include="Source\Vulkan\Device.hpp" />
+    <ClInclude Include="Source\Vulkan\Enumerate.hpp" />
+    <ClInclude Include="Source\Vulkan\Exception.hpp" />
+    <ClInclude Include="Source\Vulkan\Instance.hpp" />
     <ClInclude Include="Source\RenderSystem.h" />
     <ClInclude Include="Source\GlobalContext.h" />
     <ClInclude Include="Source\Fence.h" />
@@ -114,10 +121,11 @@
     <ClInclude Include="Source\VulkanIncludes.h" />
     <ClInclude Include="Source\VulkanTypes.h" />
     <ClInclude Include="Source\VulkanUtils.h" />
-    <ClInclude Include="Source\WindowData.hpp" />
     <ClInclude Include="Source\WindowSystem.h" />
-    <ClInclude Include="Source\Vulkan.hpp" />
-    <ClInclude Include="Source\Window.hpp" />
+    <ClInclude Include="Source\Vulkan\Vulkan.hpp" />
+    <ClInclude Include="Source\Vulkan\Window.hpp" />
+    <ClInclude Include="Source\Vulkan\Surface.hpp" />
+    <ClInclude Include="Source\Vulkan\Types.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

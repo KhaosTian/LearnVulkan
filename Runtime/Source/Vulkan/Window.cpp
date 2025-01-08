@@ -54,4 +54,13 @@ std::vector<const char*> Window::GetRequiredInstanceExtensions() const {
     const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
     return std::vector<const char*>(glfw_extensions, glfw_extensions + extension_count);
 }
+void Window::PollEvents() const {
+    glfwPollEvents();
+}
+void Window::WaitEvents() const {
+    glfwWaitEvents();
+}
+bool Window::ShouldClose() const {
+    return glfwWindowShouldClose(m_window);
+}
 } // namespace Vulkan

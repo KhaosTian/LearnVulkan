@@ -156,7 +156,7 @@ void VulkanCore::CreateLogicalDevice() {
         LOG_ERROR("Failed to create logical device!");
     }
 
-    // init queues of this device
+    // init queues of this device                              
     vkGetDeviceQueue(m_device, m_queue_indices.graphics.value(), 0, &m_queue_graphics);
     vkGetDeviceQueue(m_device, m_queue_indices.present.value(), 0, &m_queue_present);
     vkGetDeviceQueue(m_device, m_queue_indices.compute.value(), 0, &m_queue_compute);
@@ -270,7 +270,7 @@ bool VulkanCore::CheckDeviceExtensionSupport(VkPhysicalDevice physical_device) {
     // ensure that required extensions are supported
     std::set<std::string> required_extensions(m_device_extensions.begin(), m_device_extensions.end());
     for (const auto& extension: available_extensions) {
-        required_extensions.erase(extension.extensionName);
+        required_extensions.erase(extension.extensionName); 
     }
 
     return required_extensions.empty();

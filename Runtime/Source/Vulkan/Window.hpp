@@ -7,7 +7,14 @@
 
 namespace Vulkan {
 
-class WindowData;
+struct WindowData {
+    int          width;
+    int          height;
+    std::string* title;
+    bool         is_fullscreen;
+    bool         resizable;
+    bool         hide_title;
+};
 
 class Window final {
 public:
@@ -16,14 +23,18 @@ public:
     ~Window();
 
     GLFWwindow*       Handle() const { return m_window; }
-    const WindowData& GetData() const { return m_data; }
+    const WindowData& Data() const { return m_data; }
 
     VkExtent2D               WindowSize() const;
     std::vector<const char*> GetRequiredInstanceExtensions() const;
 
+    void PollEvents() const;
+    void WaitEvents() const;
+    bool ShouldClose() const;
+
 private:
     const WindowData m_data;
-    GLFWwindow*      m_window {};
+    GLFWwindow*      m_window {nullptr};
 };
 
 } // namespace Vulkan

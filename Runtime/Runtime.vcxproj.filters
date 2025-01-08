@@ -36,13 +36,22 @@
     <ClCompile Include="Source\VulkanUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Instance.cpp">
+    <ClCompile Include="Source\Vulkan\Instance.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Vulkan.cpp">
+    <ClCompile Include="Source\Vulkan\Vulkan.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Window.cpp">
+    <ClCompile Include="Source\Vulkan\Window.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Device.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Surface.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\BaseRenderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,16 +95,31 @@
     <ClInclude Include="Source\VulkanUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Instance.hpp">
+    <ClInclude Include="Source\Vulkan\Instance.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Vulkan.hpp">
+    <ClInclude Include="Source\Vulkan\Vulkan.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Window.hpp">
+    <ClInclude Include="Source\Vulkan\Window.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\WindowData.hpp">
+    <ClInclude Include="Source\Vulkan\Enumerate.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Exception.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Device.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Surface.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\BaseRenderer.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Types.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
