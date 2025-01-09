@@ -54,6 +54,9 @@
     <ClCompile Include="Source\Vulkan\BaseRenderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Vulkan\Log.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\GlfwGeneral.hpp">
@@ -104,9 +107,6 @@
     <ClInclude Include="Source\Vulkan\Window.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Vulkan\Exception.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Vulkan\Device.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -116,7 +116,13 @@
     <ClInclude Include="Source\Vulkan\BaseRenderer.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Vulkan\Types.h">
+    <ClInclude Include="Source\Vulkan\Types.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Log.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Enumerate.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

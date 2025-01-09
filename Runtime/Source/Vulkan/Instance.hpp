@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vulkan.hpp";
-#include <vector>
+#include "Vulkan.hpp"
 
 namespace Vulkan {
 
@@ -13,24 +13,25 @@ public:
     Instance(const Window& window);
     ~Instance();
 
-    // getter and setter
-    VkInstance                           GetHandle() const { return m_instance; }
-    const std::vector<VkPhysicalDevice>  GetPhysicalDevices() const { return m_physical_devices; }
-    const std::vector<VkLayerProperties> GetLayers() const { return m_layers; }
-    const Window&                        GetWindow() const { return m_window; }
+    auto        GetHandle() const { return m_instance; }
+    const auto  GetInstanceExtensions() const { return m_instance_extensions; }
+    const auto  GetPhysicalDevices() const { return m_physical_devices; }
+    const auto  GetLayers() const { return m_layers; }
+    const auto& GetWindow() const { return m_window; }
 
 private:
-    uint32_t                       m_vulkan_api_version { VK_API_VERSION_1_0 };
-    VkInstance                     m_instance { nullptr };
+    uint32_t   m_vulkan_api_version { VK_API_VERSION_1_0 };
+    VkInstance m_instance { nullptr };
+
+    const Window& m_window;
+
     std::vector<VkPhysicalDevice>  m_physical_devices;
     std::vector<VkLayerProperties> m_layers;
-    const Window&                  m_window;
+    std::vector<const char*>       m_instance_extensions;
 
     const std::vector<const char*> m_validation_layers { "VK_LAYER_KHRONOS_validation" };
-    void                           CheckValidationLayerSupport(const std::vector<VkLayerProperties>& layers);
 
-    void QueryPhysicalDevices(std::vector<VkPhysicalDevice>& physical_devices) const;
-    void QueryValidationLayers(std::vector<VkLayerProperties>& layers) const;
+    void CheckValidationLayers(const std::vector<VkLayerProperties>& layers) const;
 };
 
 } // namespace Vulkan

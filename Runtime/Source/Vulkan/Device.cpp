@@ -10,14 +10,23 @@ Device::Device(
 ):
     m_physical_device(physical_device),
     m_surface(surface) {
+    CheckDeviceExtensions(required_extensions);
 }
 Device::~Device() {
+    if (m_device == nullptr) return;
 }
-void Device::CheckDeviceExtensionsSupport(
-    VkPhysicalDevice                physical_device,
-    const std::vector<const char*>& requiredExtensions
-) const {
-    const auto available_extensions =
-        GetEnumerateVector(physical_device, static_cast<const char*>(nullptr), vkEnumerateDeviceExtensionProperties);
+
+void Device::CheckDeviceExtensions(const std::vector<const char*>& required_extensions) const {
+    auto availables =
+        GetEnumerateVector(m_physical_device, Nullptr<const char>(), vkEnumerateDeviceExtensionProperties);
+
+    std::set<std::string> requireds(required_extensions.begin(), required_extensions.end());
+    for (const auto& available: availables) {
+        requireds.erase(available.extensionName);
+    }
+
+    if (requireds.empty()) {
+        LOG_ERROR("Missing required extensions: {}", availables);
+    }
 }
 } // namespace Vulkan

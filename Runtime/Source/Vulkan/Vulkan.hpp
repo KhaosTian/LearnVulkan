@@ -1,5 +1,14 @@
 #pragma once
- 
+
+// std
+#include <functional>
+#include <vector>
+#include <memory>
+#include <map>
+#include <algorithm>
+#include <set>
+
+// external
 #ifndef NOMINMAX
     #define NOMINMAX
 #endif
@@ -12,7 +21,14 @@
 #pragma comment(lib, "vulkan-1.lib")
 #include <vulkan/vulkan.h>
 
+// core
+#include "Log.hpp"
+
 namespace Vulkan {
-void        Check(const VkResult result, const char* const operation);
-const char* ToString(const VkResult result);
+void Check(VkResult result, const char* operation);
+
+template<typename T>
+inline T* Nullptr() {
+    return nullptr;
 }
+} // namespace Vulkan

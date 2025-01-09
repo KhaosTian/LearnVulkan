@@ -1,12 +1,11 @@
 #include "Window.hpp"
-#include "WindowData.hpp"
-#include <stdexcept>
 
 namespace Vulkan {
 Window::Window(const WindowData& data): m_data(data) {
     // 初始化glfw
     if (!glfwInit()) {
-        std::runtime_error("Failed to init GLFW");
+        LOG_ERROR("Failed to init GLFW");
+        return;
     }
 
     // 根据window data初始化窗口状态
@@ -21,9 +20,9 @@ Window::Window(const WindowData& data): m_data(data) {
     const GLFWmonitor* monitor = data.is_fullscreen ? glfwGetPrimaryMonitor() : nullptr;
 
     // 创建window
-    m_window = glfwCreateWindow(data.width, data.height, data.title->c_str(), nullptr, nullptr);
+    m_window = glfwCreateWindow(data.width, data.height, data.title.c_str(), nullptr, nullptr);
     if (!m_window) {
-        std::runtime_error("Failed to create glfw window");
+        LOG_ERROR("Failed to create glfw window");
         glfwTerminate();
         return;
     }
@@ -50,10 +49,13 @@ VkExtent2D Window::WindowSize() const {
 }
 
 std::vector<const char*> Window::GetRequiredInstanceExtensions() const {
-    uint32_t     extension_count = 0;
-    const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
-    return std::vector<const char*>(glfw_extensions, glfw_extensions + extension_count);
+    uint32_t     extension_count     = 0;
+    const char** required_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
+
+    std::vector<const char*> extensions(required_extensions, required_extensions + extension_count);
+    return extensions;
 }
+
 void Window::PollEvents() const {
     glfwPollEvents();
 }

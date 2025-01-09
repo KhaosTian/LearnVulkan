@@ -89,6 +89,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Vulkan\Log.cpp" />
     <ClCompile Include="Source\Vulkan\BaseRenderer.cpp" />
     <ClCompile Include="Source\Vulkan\Device.cpp" />
     <ClCompile Include="Source\Vulkan\Instance.cpp" />
@@ -104,9 +105,10 @@
     <ClCompile Include="Source\Vulkan\Surface.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Vulkan\Enumerate.hpp" />
+    <ClInclude Include="Source\Vulkan\Log.hpp" />
     <ClInclude Include="Source\Vulkan\BaseRenderer.hpp" />
     <ClInclude Include="Source\Vulkan\Device.hpp" />
-    <ClInclude Include="Source\Vulkan\Exception.hpp" />
     <ClInclude Include="Source\Vulkan\Instance.hpp" />
     <ClInclude Include="Source\RenderSystem.h" />
     <ClInclude Include="Source\GlobalContext.h" />
@@ -124,7 +126,7 @@
     <ClInclude Include="Source\Vulkan\Vulkan.hpp" />
     <ClInclude Include="Source\Vulkan\Window.hpp" />
     <ClInclude Include="Source\Vulkan\Surface.hpp" />
-    <ClInclude Include="Source\Vulkan\Types.h" />
+    <ClInclude Include="Source\Vulkan\Types.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

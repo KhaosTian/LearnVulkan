@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Vulkan.hpp"
-#include <optional>
-#include <vector>
 
 namespace Vulkan {
 struct QueueFamilyIndices {

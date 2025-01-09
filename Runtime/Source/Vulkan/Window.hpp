@@ -2,18 +2,15 @@
 
 #include "Vulkan.hpp"
 
-#include <functional>
-#include <vector>
-
 namespace Vulkan {
 
 struct WindowData {
-    int          width;
-    int          height;
-    std::string* title;
-    bool         is_fullscreen;
-    bool         resizable;
-    bool         hide_title;
+    int         width;
+    int         height;
+    std::string title;
+    bool        is_fullscreen;
+    bool        resizable;
+    bool        hide_title;
 };
 
 class Window final {
@@ -34,7 +31,7 @@ public:
 
 private:
     const WindowData m_data;
-    GLFWwindow*      m_window {nullptr};
+    GLFWwindow*      m_window { nullptr };
 };
 
 } // namespace Vulkan
