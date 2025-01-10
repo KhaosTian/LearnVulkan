@@ -33,6 +33,10 @@ private:
 
     QueueFamilyIndices m_queue_indices {};
 
-    void CheckDeviceExtensions(const std::vector<const char*>& required_extensions) const;
+    void CheckDeviceRequiredExtensions(
+        VkPhysicalDevice                physical_device,
+        const std::vector<const char*>& required_extensions
+    ) const;
+    QueueFamilyIndices QueryQueueFamiliyIndices(VkPhysicalDevice physical_device) const
 };
 } // namespace Vulkan
