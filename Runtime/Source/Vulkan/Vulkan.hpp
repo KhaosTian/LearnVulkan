@@ -7,10 +7,12 @@
 #include <map>
 #include <algorithm>
 #include <set>
+#include <iostream>
+#include <string>
 
 // external
 #ifndef NOMINMAX
-    #define NOMINMAX
+#define NOMINMAX
 #endif
 
 #define GLFW_INCLUDE_VULKAN
@@ -20,15 +22,3 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #pragma comment(lib, "vulkan-1.lib")
 #include <vulkan/vulkan.h>
-
-// core
-#include "Log.hpp"
-
-namespace Vulkan {
-void Check(VkResult result, const char* operation);
-
-template<typename T>
-inline T* Nullptr() {
-    return nullptr;
-}
-} // namespace Vulkan

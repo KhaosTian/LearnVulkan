@@ -89,40 +89,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Vulkan\Log.cpp" />
     <ClCompile Include="Source\Vulkan\BaseRenderer.cpp" />
     <ClCompile Include="Source\Vulkan\Device.cpp" />
     <ClCompile Include="Source\Vulkan\Instance.cpp" />
-    <ClCompile Include="Source\RenderSystem.cpp" />
-    <ClCompile Include="Source\GlobalContext.cpp" />
-    <ClCompile Include="Source\LogSystem.cpp" />
     <ClCompile Include="Source\main.cpp" />
-    <ClCompile Include="Source\VulkanCore.cpp" />
-    <ClCompile Include="Source\VulkanUtils.cpp" />
-    <ClCompile Include="Source\WindowSystem.cpp" />
+    <ClCompile Include="Source\Vulkan\SwapChain.cpp" />
     <ClCompile Include="Source\Vulkan\Vulkan.cpp" />
     <ClCompile Include="Source\Vulkan\Window.cpp" />
     <ClCompile Include="Source\Vulkan\Surface.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Vulkan\Enumerate.hpp" />
-    <ClInclude Include="Source\Vulkan\Log.hpp" />
     <ClInclude Include="Source\Vulkan\BaseRenderer.hpp" />
     <ClInclude Include="Source\Vulkan\Device.hpp" />
     <ClInclude Include="Source\Vulkan\Instance.hpp" />
-    <ClInclude Include="Source\RenderSystem.h" />
-    <ClInclude Include="Source\GlobalContext.h" />
-    <ClInclude Include="Source\Fence.h" />
-    <ClInclude Include="Source\GlfwGeneral.hpp" />
-    <ClInclude Include="Source\LogSystem.h" />
-    <ClInclude Include="Source\VulkanExtension.h" />
-    <ClInclude Include="Source\VulkanMacro.h" />
-    <ClInclude Include="Source\VulkanCore.h" />
-    <ClInclude Include="Source\Graphics.h" />
-    <ClInclude Include="Source\VulkanIncludes.h" />
-    <ClInclude Include="Source\VulkanTypes.h" />
-    <ClInclude Include="Source\VulkanUtils.h" />
-    <ClInclude Include="Source\WindowSystem.h" />
+    <ClInclude Include="Source\Vulkan\SwapChain.hpp" />
     <ClInclude Include="Source\Vulkan\Vulkan.hpp" />
     <ClInclude Include="Source\Vulkan\Window.hpp" />
     <ClInclude Include="Source\Vulkan\Surface.hpp" />

@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Surface.hpp"
 #include "Vulkan.hpp"
 #include "Types.hpp"
 
 namespace Vulkan {
-
 class Surface;
 
 class Device final {
@@ -18,25 +18,36 @@ public:
     );
     ~Device();
 
-    VkDevice GetHandle() const { return m_device; }
-
 private:
-    VkDevice               m_device { nullptr };
     const VkPhysicalDevice m_physical_device;
     const Surface&         m_surface;
 
+    VkDevice                   m_device{ nullptr };
+    VkPhysicalDeviceFeatures   m_device_features{};
+    VkPhysicalDeviceProperties m_device_properties{};
+
     std::vector<VkExtensionProperties> m_available_extensions;
 
-    VkQueue m_queue_graphics { nullptr };
-    VkQueue m_queue_present { nullptr };
-    VkQueue m_queue_compute { nullptr };
+    VkQueue m_queue_graphics{ nullptr };
+    VkQueue m_queue_present{ nullptr };
+    VkQueue m_queue_compute{ nullptr };
 
-    QueueFamilyIndices m_queue_indices {};
+    QueueFamilyIndices m_queue_indices;
 
-    void CheckDeviceRequiredExtensions(
-        VkPhysicalDevice                physical_device,
-        const std::vector<const char*>& required_extensions
-    ) const;
-    QueueFamilyIndices QueryQueueFamiliyIndices(VkPhysicalDevice physical_device) const
+public:
+    VkDevice           GetHandle() const { return m_device; }
+    VkPhysicalDevice   GetPhysicalDevice() const { return m_physical_device; }
+    VkSurfaceKHR       GetSurface() const { return m_surface.GetHandle(); }
+    QueueFamilyIndices GetQueueFamilyIndices() const { return m_queue_indices; }
+    
+    static std::vector<VkDeviceQueueCreateInfo> BuildQueueCreateInfos(const QueueFamilyIndices& queue_indices);
+
+private:
+    void CheckRequiredExtensionsSupport(const std::vector<const char*>& required_extensions) const;
+
+    QueueFamilyIndices FindQueueFamilyIndices() const;
+
+    void CreateDevice(const std::vector<const char*>&             required_extensions,
+                      const std::vector<VkDeviceQueueCreateInfo>& queue_create_infos);
 };
 } // namespace Vulkan
